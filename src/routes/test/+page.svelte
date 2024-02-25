@@ -1,8 +1,8 @@
-<script>
+<script lang="ts">
 </script>
 
-<div class="main-page">
-	<h2>Some Title</h2>
+<div class="test">
+	<h2>Test</h2>
 	<p>
 		Lorim ipsum dolor sit amet, consectetur adipiscing elit. Similique autem odit dignissimos,
 		libero iure sequi quidem excepturi rerum quasi et nostrum tempore ipsam. Ullam exercitationem
@@ -13,9 +13,9 @@
 </div>
 
 <style>
-	.main-page {
+	.test {
 		display: block;
 		text-align: center;
-		margin: 20px auto;
+		background-color: lightblue;
 	}
 </style>
