@@ -14,21 +14,28 @@
 	}
 </script>
 
-<div class="header_nav">
-	<a class="header_current" href="/inventory"><h1>Inventory</h1></a>
+<div class="header-nav">
+	<a class="header-current" href="/inventory"><h1>Inventory</h1></a>
 	<a href="/tickets"><h1>Tickets</h1></a>
 	<a href="/customers"><h1>Customers</h1></a>
 </div>
 <div class="inventory">
 	<h1>Inventory</h1>
 	<div class="table">
+		<div class="row">
+			<h2>SKU</h2>
+			<h2>Name</h2>
+			<h2>Count</h2>
+			<h2>Cost</h2>
+			<h2>Price</h2>
+		</div>
 		{#each inventory as inventoryItem}
 			<div class="row">
-				<h2>SKU: {formatSku(inventoryItem.sku)}</h2>
-				<h2>Name: {inventoryItem.display_name}</h2>
-				<h2>Count: {inventoryItem.count}</h2>
-				<h2>Cost: {formatCurrency(inventoryItem.cost)}</h2>
-				<h2>Price: {formatCurrency(inventoryItem.price)}</h2>
+				<h3 class="grid-item">{formatSku(inventoryItem.sku)}</h3>
+				<h3 class="grid-item">{inventoryItem.display_name}</h3>
+				<h3 class="grid-item">{inventoryItem.count}</h3>
+				<h3 class="grid-item">{formatCurrency(inventoryItem.cost)}</h3>
+				<h3 class="grid-item">{formatCurrency(inventoryItem.price)}</h3>
 			</div>
 		{/each}
 	</div>
@@ -36,16 +43,17 @@
 
 <style lang="scss">
 	h1,
-	h2 {
+	h2,
+	h3 {
 		font-family: 'Helvetica', sans-serif;
 	}
 
-	.header_nav {
+	.header-nav {
 		display: flex;
 		flex-direction: row;
 		flex-wrap: nowrap;
 		align-items: center;
-		justify-content: left;
+		justify-content: flex-start;
 		background-color: lightblue;
 
 		a {
@@ -55,6 +63,7 @@
 			padding-right: 25px;
 			text-decoration: none;
 			color: black;
+			transition: 0.2s ease-out;
 
 			&:hover {
 				border-top-left-radius: 17px;
@@ -63,7 +72,7 @@
 				transition: 0.2s ease-out;
 			}
 
-			&.header_current {
+			&.header-current {
 				color: blue;
 			}
 		}
@@ -71,31 +80,34 @@
 
 	.inventory {
 		.table {
-			display: flex;
-			flex-direction: column;
-			flex-wrap: nowrap;
+			display: grid;
+			grid-template-columns: repeat(5, 20%);
+			grid-template-rows: auto;
 			padding: 15px;
-			gap: 15px;
+			row-gap: 15px;
 			border-radius: 20px;
-			background-color: darkslategray;
+			background-color: black;
 
 			.row {
-				display: flex;
-				flex-direction: row;
-				flex-wrap: nowrap;
-				justify-content: left;
+				display: grid;
+				grid-template-columns: repeat(5, 20%);
+				grid-column-start: 1;
+				grid-column-end: 6;
 				padding-left: 15px;
-				gap: 40px;
+				padding-right: 15px;
 				border-radius: 20px;
 				background-color: lightgrey;
 				transition: 0.2s ease-out;
 
 				&:hover {
-					transform: scale(1.0035);
-					// margin: 0px -3px;
+					transform: scale(1.0035) translateY(-2px);
 					border-radius: 19px;
 					background-color: white;
 					transition: 0.2s ease-out;
+				}
+
+				.grid-item {
+					padding-left: 5px;
 				}
 			}
 		}
