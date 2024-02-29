@@ -78,11 +78,41 @@
 
 	<div class="table gray-outline">
 		<div class="column-header">
-			<span class="column-name">SKU</span>
-			<span class="column-name">Name</span>
-			<span class="column-name">Count</span>
-			<span class="column-name">Cost</span>
-			<span class="column-name">Price</span>
+			<div class="column-title">
+				<span class="column-name">SKU</span>
+				<div class="sort-arrows">
+					<img src="/sort_arrow_ascending.svg" alt="Ascending sort" />
+					<img src="/sort_arrow_descending.svg" alt="Descending sort" />
+				</div>
+			</div>
+			<div class="column-title">
+				<span class="column-name">Name</span>
+				<div class="sort-arrows">
+					<img src="/sort_arrow_ascending.svg" alt="Ascending sort" />
+					<img src="/sort_arrow_descending.svg" alt="Descending sort" />
+				</div>
+			</div>
+			<div class="column-title">
+				<span class="column-name">Count</span>
+				<div class="sort-arrows">
+					<img src="/sort_arrow_ascending.svg" alt="Ascending sort" />
+					<img src="/sort_arrow_descending.svg" alt="Descending sort" />
+				</div>
+			</div>
+			<div class="column-title">
+				<span class="column-name">Cost</span>
+				<div class="sort-arrows">
+					<img src="/sort_arrow_ascending.svg" alt="Ascending sort" />
+					<img src="/sort_arrow_descending.svg" alt="Descending sort" />
+				</div>
+			</div>
+			<div class="column-title">
+				<span class="column-name">Price</span>
+				<div class="sort-arrows">
+					<img src="/sort_arrow_ascending.svg" alt="Ascending sort" />
+					<img src="/sort_arrow_descending.svg" alt="Descending sort" />
+				</div>
+			</div>
 		</div>
 		<div class="table-body gray-outline">
 			{#each inventory as inventoryItem}
@@ -122,7 +152,6 @@
 		flex-direction: row;
 		flex-wrap: nowrap;
 		align-items: center;
-		justify-content: flex-start;
 		background-color: lightblue;
 
 		a {
@@ -156,7 +185,6 @@
 	.table-menu {
 		display: flex;
 		flex-direction: row;
-		justify-content: space-between;
 		gap: 15px;
 		font-size: 16px;
 		color: white;
@@ -210,6 +238,20 @@
 		span.grid-item {
 			font-size: 18px;
 			padding-left: 5px;
+		}
+
+		.column-title {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+		}
+
+		.sort-arrows {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 3px;
+			padding-left: 7px;
 		}
 
 		.table-body {
