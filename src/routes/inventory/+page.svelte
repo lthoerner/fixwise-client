@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Decimal from 'decimal.js';
+	import { goto } from '$app/navigation';
 
 	type InventoryItem = {
 		sku: number;
@@ -11,7 +12,10 @@
 
 	export let data;
 
-	let inventory = data.inventoryJson.map((item: InventoryItem) => {
+	let selectedSortColumn = 'sku';
+	let ascendingSort = true;
+
+	$: inventory = data.inventoryJson.map((item: InventoryItem) => {
 		let parsedItem: InventoryItem = {
 			...item,
 			cost: new Decimal(item.cost),
@@ -27,6 +31,17 @@
 
 	function formatCurrency(value: Decimal) {
 		return value.toFixed(2);
+	}
+
+	function sortInventoryClickHandler(column: string) {
+		if (column === selectedSortColumn) {
+			ascendingSort = !ascendingSort;
+		} else {
+			selectedSortColumn = column;
+			ascendingSort = true;
+		}
+
+		goto(`/inventory?column=${column}&direction=${ascendingSort ? 'asc' : 'desc'}`);
 	}
 </script>
 
@@ -78,41 +93,91 @@
 
 	<div class="table gray-outline">
 		<div class="column-header">
-			<div class="column-title">
+			<button class="column-title" on:click={() => sortInventoryClickHandler('sku')}>
 				<span class="column-name">SKU</span>
 				<div class="sort-arrows">
-					<img src="/sort_arrow_ascending.svg" alt="Ascending sort" />
-					<img src="/sort_arrow_descending.svg" alt="Descending sort" />
+					<img
+						class:active={ascendingSort && selectedSortColumn == 'sku'}
+						class:inactive={!ascendingSort && selectedSortColumn == 'sku'}
+						src="/sort_arrow_ascending.svg"
+						alt="Ascending sort"
+					/>
+					<img
+						class:active={!ascendingSort && selectedSortColumn == 'sku'}
+						class:inactive={ascendingSort && selectedSortColumn == 'sku'}
+						src="/sort_arrow_descending.svg"
+						alt="Descending sort"
+					/>
 				</div>
-			</div>
-			<div class="column-title">
+			</button>
+			<button class="column-title" on:click={() => sortInventoryClickHandler('display_name')}>
 				<span class="column-name">Name</span>
 				<div class="sort-arrows">
-					<img src="/sort_arrow_ascending.svg" alt="Ascending sort" />
-					<img src="/sort_arrow_descending.svg" alt="Descending sort" />
+					<img
+						class:active={ascendingSort && selectedSortColumn == 'display_name'}
+						class:inactive={!ascendingSort && selectedSortColumn == 'display_name'}
+						src="/sort_arrow_ascending.svg"
+						alt="Ascending sort"
+					/>
+					<img
+						class:active={!ascendingSort && selectedSortColumn == 'display_name'}
+						class:inactive={ascendingSort && selectedSortColumn == 'display_name'}
+						src="/sort_arrow_descending.svg"
+						alt="Descending sort"
+					/>
 				</div>
-			</div>
-			<div class="column-title">
+			</button>
+			<button class="column-title" on:click={() => sortInventoryClickHandler('count')}>
 				<span class="column-name">Count</span>
 				<div class="sort-arrows">
-					<img src="/sort_arrow_ascending.svg" alt="Ascending sort" />
-					<img src="/sort_arrow_descending.svg" alt="Descending sort" />
+					<img
+						class:active={ascendingSort && selectedSortColumn == 'count'}
+						class:inactive={!ascendingSort && selectedSortColumn == 'count'}
+						src="/sort_arrow_ascending.svg"
+						alt="Ascending sort"
+					/>
+					<img
+						class:active={!ascendingSort && selectedSortColumn == 'count'}
+						class:inactive={ascendingSort && selectedSortColumn == 'count'}
+						src="/sort_arrow_descending.svg"
+						alt="Descending sort"
+					/>
 				</div>
-			</div>
-			<div class="column-title">
+			</button>
+			<button class="column-title" on:click={() => sortInventoryClickHandler('cost')}>
 				<span class="column-name">Cost</span>
 				<div class="sort-arrows">
-					<img src="/sort_arrow_ascending.svg" alt="Ascending sort" />
-					<img src="/sort_arrow_descending.svg" alt="Descending sort" />
+					<img
+						class:active={ascendingSort && selectedSortColumn == 'cost'}
+						class:inactive={!ascendingSort && selectedSortColumn == 'cost'}
+						src="/sort_arrow_ascending.svg"
+						alt="Ascending sort"
+					/>
+					<img
+						class:active={!ascendingSort && selectedSortColumn == 'cost'}
+						class:inactive={ascendingSort && selectedSortColumn == 'cost'}
+						src="/sort_arrow_descending.svg"
+						alt="Descending sort"
+					/>
 				</div>
-			</div>
-			<div class="column-title">
+			</button>
+			<button class="column-title" on:click={() => sortInventoryClickHandler('price')}>
 				<span class="column-name">Price</span>
 				<div class="sort-arrows">
-					<img src="/sort_arrow_ascending.svg" alt="Ascending sort" />
-					<img src="/sort_arrow_descending.svg" alt="Descending sort" />
+					<img
+						class:active={ascendingSort && selectedSortColumn == 'price'}
+						class:inactive={!ascendingSort && selectedSortColumn == 'price'}
+						src="/sort_arrow_ascending.svg"
+						alt="Ascending sort"
+					/>
+					<img
+						class:active={!ascendingSort && selectedSortColumn == 'price'}
+						class:inactive={ascendingSort && selectedSortColumn == 'price'}
+						src="/sort_arrow_descending.svg"
+						alt="Descending sort"
+					/>
 				</div>
-			</div>
+			</button>
 		</div>
 		<div class="table-body gray-outline">
 			{#each inventory as inventoryItem}
@@ -244,6 +309,8 @@
 			display: flex;
 			flex-direction: row;
 			align-items: center;
+			background-color: transparent;
+			border: none;
 		}
 
 		.sort-arrows {
@@ -252,6 +319,18 @@
 			align-items: center;
 			gap: 3px;
 			padding-left: 7px;
+
+			img {
+				opacity: 0;
+			}
+
+			img.active {
+				opacity: 0.8;
+			}
+
+			img.inactive {
+				opacity: 0.4;
+			}
 		}
 
 		.table-body {
