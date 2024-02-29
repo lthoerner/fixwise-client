@@ -1,16 +1,32 @@
 <script lang="ts">
-	import Decimal from 'decimal.js-light';
+	import Decimal from 'decimal.js';
+
+	type InventoryItem = {
+		sku: number;
+		display_name: string;
+		count: number;
+		cost: Decimal;
+		price: Decimal;
+	};
 
 	export let data;
-	let inventory = data.inventoryJson;
+
+	let inventory = data.inventoryJson.map((item: InventoryItem) => {
+		let parsedItem: InventoryItem = {
+			...item,
+			cost: new Decimal(item.cost),
+			price: new Decimal(item.price)
+		};
+
+		return parsedItem;
+	});
 
 	function formatSku(sku: number) {
 		return '#' + sku.toString().padStart(6, '0');
 	}
 
-	function formatCurrency(value: string) {
-		let decimalValue = new Decimal(value);
-		return decimalValue.toFixed(2);
+	function formatCurrency(value: Decimal) {
+		return value.toFixed(2);
 	}
 </script>
 
