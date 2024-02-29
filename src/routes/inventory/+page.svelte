@@ -1,30 +1,4 @@
 <script lang="ts">
-	import Decimal from 'decimal.js';
-	import { goto } from '$app/navigation';
-
-	type InventoryItem = {
-		sku: number;
-		display_name: string;
-		count: number;
-		cost: Decimal;
-		price: Decimal;
-	};
-
-	export let data;
-
-	let selectedSortColumn = 'sku';
-	let ascendingSort = true;
-
-	$: inventory = data.inventoryJson.map((item: InventoryItem) => {
-		let parsedItem: InventoryItem = {
-			...item,
-			cost: new Decimal(item.cost),
-			price: new Decimal(item.price)
-		};
-
-		return parsedItem;
-	});
-
 	function formatSku(sku: number) {
 		return '#' + sku.toString().padStart(7, '0');
 	}
@@ -43,6 +17,38 @@
 
 		goto(`/inventory?column=${column}&direction=${ascendingSort ? 'asc' : 'desc'}`);
 	}
+
+	import Decimal from 'decimal.js';
+	import { goto } from '$app/navigation';
+
+	type InventoryItem = {
+		sku: number;
+		display_name: string;
+		count: number;
+		cost: Decimal;
+		price: Decimal;
+	};
+
+	export let data;
+
+	let selectedSortColumn = 'sku';
+	let ascendingSort = true;
+
+	let recordsPerPage = 10;
+	let page = 1;
+
+	$: pages = Math.ceil(data.inventoryJson.length / recordsPerPage);
+	$: inventory = data.inventoryJson
+		.map((item: InventoryItem) => {
+			let parsedItem: InventoryItem = {
+				...item,
+				cost: new Decimal(item.cost),
+				price: new Decimal(item.price)
+			};
+
+			return parsedItem;
+		})
+		.slice((page - 1) * recordsPerPage, page * recordsPerPage);
 </script>
 
 <nav class="menu">
@@ -61,12 +67,16 @@
 		<div class="menu-right">
 			<div class="records-per-page">
 				<div class="label"><span>Records per page:</span></div>
-				<div class="value gray-outline"><span>10</span></div>
+				<div class="value gray-outline">
+					<input type="number" bind:value={recordsPerPage} />
+				</div>
 			</div>
 			<div class="page-number">
 				<div class="prefix-label"><span>Page:</span></div>
-				<div class="value gray-outline"><span>1</span></div>
-				<div class="suffix-label"><span>of <strong>15</strong></span></div>
+				<div class="value gray-outline">
+					<input type="number" bind:value={page} />
+				</div>
+				<div class="suffix-label"><span>of <strong>{pages}</strong></span></div>
 			</div>
 			<div class="page-navigation">
 				<svg width="14" height="22" viewBox="0 0 14 22" fill="none">
@@ -205,6 +215,17 @@
 		font-family: 'Helvetica', sans-serif;
 	}
 
+	input::-webkit-outer-spin-button,
+	input::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	input[type='number'] {
+		-moz-appearance: textfield;
+		appearance: textfield;
+	}
+
 	.gray-outline {
 		border-style: solid;
 		border-width: 2px;
@@ -264,11 +285,32 @@
 			gap: 7px;
 		}
 
-		span {
+		span,
+		input {
 			padding-top: 7px;
 			padding-bottom: 7px;
 			padding-left: 10px;
 			padding-right: 10px;
+		}
+
+		input {
+			background-color: transparent;
+			border: none;
+			color: white;
+			font-size: 16px;
+			text-align: center;
+		}
+
+		.records-per-page {
+			input {
+				width: 3em;
+			}
+		}
+
+		.page-number {
+			input {
+				width: 2em;
+			}
 		}
 
 		.quick-search {
