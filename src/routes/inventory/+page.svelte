@@ -12,6 +12,22 @@
 		return value.toFixed(2);
 	}
 
+	function turnPage(next: boolean) {
+		if (next) {
+			if (page < pages) {
+				page++;
+			} else {
+				page = 1;
+			}
+		} else {
+			if (page > 1) {
+				page--;
+			} else {
+				page = pages;
+			}
+		}
+	}
+
 	type InventoryItem = {
 		sku: number;
 		display_name: string;
@@ -81,24 +97,12 @@
 				<div class="suffix-label"><span>of <strong>{pages}</strong></span></div>
 			</div>
 			<div class="page-navigation">
-				<svg width="14" height="22" viewBox="0 0 14 22" fill="none">
-					<path
-						d="M12 2L3 11L12 20"
-						stroke="white"
-						stroke-opacity="0.5"
-						stroke-width="3"
-						stroke-linecap="round"
-					/>
-				</svg>
-				<svg width="14" height="22" viewBox="0 0 14 22" fill="none">
-					<path
-						d="M2 2L11 11L2 20"
-						stroke="white"
-						stroke-opacity="0.5"
-						stroke-width="3"
-						stroke-linecap="round"
-					/>
-				</svg>
+				<button on:click={() => turnPage(false)}>
+					<img src="/page_navigator_previous.svg" alt="Next page" />
+				</button>
+				<button on:click={() => turnPage(true)}>
+					<img src="/page_navigator_next.svg" alt="Previous page" />
+				</button>
 			</div>
 		</div>
 	</div>
@@ -171,6 +175,12 @@
 	input[type='number'] {
 		-moz-appearance: textfield;
 		appearance: textfield;
+	}
+
+	button {
+		background-color: transparent;
+		padding: 0;
+		border: none;
 	}
 
 	.gray-outline {
@@ -270,6 +280,16 @@
 
 		.page-navigation {
 			gap: 15px;
+
+			img {
+				opacity: 0.5;
+				transition: 0.23s ease-out;
+
+				&:hover {
+					opacity: 1;
+					transition: 0.23s ease-out;
+				}
+			}
 		}
 	}
 
