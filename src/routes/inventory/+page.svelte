@@ -298,10 +298,10 @@
 		margin-top: 15px;
 		padding: 15px;
 
-		span {
+		.grid-item {
 			color: white;
 			font-size: 18px;
-			padding-left: 5px;
+			padding-left: 3px;
 		}
 
 		.column-header {
