@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Decimal from 'decimal.js';
-	import { goto } from '$app/navigation';
 	import ColumnTitle from './ColumnTitle.svelte';
 	export let data;
 
@@ -43,6 +42,7 @@
 	let recordsPerPage = 10;
 	let page = 1;
 
+	$: page = page < pages ? page : pages;
 	$: pages = Math.ceil(inventory.length / recordsPerPage);
 	$: windowedInventory = inventory.slice((page - 1) * recordsPerPage, page * recordsPerPage);
 	$: inventory = (data.inventoryJson as any[])
@@ -195,7 +195,7 @@
 		flex-direction: row;
 		flex-wrap: nowrap;
 		align-items: center;
-		background-color: lightblue;
+		background-color: purple;
 
 		a {
 			padding-top: 3px;
