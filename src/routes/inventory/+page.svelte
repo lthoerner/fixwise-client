@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Decimal from 'decimal.js';
 	import { goto } from '$app/navigation';
-	import SortArrows from './SortArrows.svelte';
+	import ColumnTitle from './ColumnTitle.svelte';
 	export let data;
 
 	function formatSku(sku: number) {
@@ -10,17 +10,6 @@
 
 	function formatCurrency(value: Decimal) {
 		return value.toFixed(2);
-	}
-
-	function sortInventoryClickHandler(column: string) {
-		if (column === selectedSortColumn) {
-			ascendingSort = !ascendingSort;
-		} else {
-			selectedSortColumn = column;
-			ascendingSort = true;
-		}
-
-		goto(`/inventory?column=${column}&direction=${ascendingSort ? 'asc' : 'desc'}`);
 	}
 
 	type InventoryItem = {
@@ -116,26 +105,36 @@
 
 	<div class="table gray-outline">
 		<div class="column-header">
-			<button class="column-title" on:click={() => sortInventoryClickHandler('sku')}>
-				<span class="column-name">SKU</span>
-				<SortArrows ascending={ascendingSort} selected={selectedSortColumn == 'sku'} />
-			</button>
-			<button class="column-title" on:click={() => sortInventoryClickHandler('display_name')}>
-				<span class="column-name">Name</span>
-				<SortArrows ascending={ascendingSort} selected={selectedSortColumn == 'display_name'} />
-			</button>
-			<button class="column-title" on:click={() => sortInventoryClickHandler('count')}>
-				<span class="column-name">Count</span>
-				<SortArrows ascending={ascendingSort} selected={selectedSortColumn == 'count'} />
-			</button>
-			<button class="column-title" on:click={() => sortInventoryClickHandler('cost')}>
-				<span class="column-name">Cost</span>
-				<SortArrows ascending={ascendingSort} selected={selectedSortColumn == 'cost'} />
-			</button>
-			<button class="column-title" on:click={() => sortInventoryClickHandler('price')}>
-				<span class="column-name">Price</span>
-				<SortArrows ascending={ascendingSort} selected={selectedSortColumn == 'price'} />
-			</button>
+			<ColumnTitle
+				displayName="SKU"
+				columnName="sku"
+				bind:selectedColumn={selectedSortColumn}
+				bind:ascending={ascendingSort}
+			/>
+			<ColumnTitle
+				displayName="Name"
+				columnName="display_name"
+				bind:selectedColumn={selectedSortColumn}
+				bind:ascending={ascendingSort}
+			/>
+			<ColumnTitle
+				displayName="Count"
+				columnName="count"
+				bind:selectedColumn={selectedSortColumn}
+				bind:ascending={ascendingSort}
+			/>
+			<ColumnTitle
+				displayName="Cost"
+				columnName="cost"
+				bind:selectedColumn={selectedSortColumn}
+				bind:ascending={ascendingSort}
+			/>
+			<ColumnTitle
+				displayName="Price"
+				columnName="price"
+				bind:selectedColumn={selectedSortColumn}
+				bind:ascending={ascendingSort}
+			/>
 		</div>
 		<div class="table-body gray-outline">
 			{#each windowedInventory as inventoryItem}
@@ -281,24 +280,18 @@
 
 		span {
 			color: white;
-		}
-
-		span.column-name {
-			font-size: 22px;
-			font-weight: bold;
-		}
-
-		span.grid-item {
 			font-size: 18px;
 			padding-left: 5px;
 		}
 
-		.column-title {
-			display: flex;
-			flex-direction: row;
-			align-items: center;
-			background-color: transparent;
-			border: none;
+		.column-header {
+			display: grid;
+			grid-template-columns: repeat(5, 20%);
+			grid-template-rows: 1;
+			padding-left: 15px;
+			padding-right: 15px;
+			margin-top: 12px;
+			margin-bottom: 17px;
 		}
 
 		.table-body {
@@ -324,16 +317,6 @@
 				background-color: rgba(255, 255, 255, 0.05);
 				transition: 0.3s ease-out;
 			}
-		}
-
-		.column-header {
-			display: grid;
-			grid-template-columns: repeat(5, 20%);
-			grid-template-rows: 1;
-			padding-left: 15px;
-			padding-right: 15px;
-			margin-top: 12px;
-			margin-bottom: 17px;
 		}
 	}
 </style>
