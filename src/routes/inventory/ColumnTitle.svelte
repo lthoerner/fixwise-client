@@ -45,6 +45,17 @@
 		padding: 0;
 		background-color: transparent;
 		border: none;
+		transition: 0.3s ease-out;
+
+		&:hover {
+			transform: translateX(-2px) translateY(-2px);
+			transition: 0.3s ease-out;
+
+			img {
+				opacity: 0.17;
+				transition: 0.3s ease-out;
+			}
+		}
 	}
 
 	span {
@@ -62,14 +73,17 @@
 
 		img {
 			opacity: 0;
+			transition: 0.3s ease-out;
 		}
 
 		img.active {
 			opacity: 0.8;
+			transition: 0.3s ease-out;
 		}
 
 		img.inactive {
 			opacity: 0.4;
+			transition: 0.3s ease-out;
 		}
 	}
 </style>
