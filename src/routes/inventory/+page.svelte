@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Decimal from 'decimal.js';
 	import { goto } from '$app/navigation';
+	import SortArrows from './SortArrows.svelte';
 	export let data;
 
 	function formatSku(sku: number) {
@@ -117,88 +118,23 @@
 		<div class="column-header">
 			<button class="column-title" on:click={() => sortInventoryClickHandler('sku')}>
 				<span class="column-name">SKU</span>
-				<div class="sort-arrows">
-					<img
-						class:active={ascendingSort && selectedSortColumn == 'sku'}
-						class:inactive={!ascendingSort && selectedSortColumn == 'sku'}
-						src="/sort_arrow_ascending.svg"
-						alt="Ascending sort"
-					/>
-					<img
-						class:active={!ascendingSort && selectedSortColumn == 'sku'}
-						class:inactive={ascendingSort && selectedSortColumn == 'sku'}
-						src="/sort_arrow_descending.svg"
-						alt="Descending sort"
-					/>
-				</div>
+				<SortArrows ascending={ascendingSort} selected={selectedSortColumn == 'sku'} />
 			</button>
 			<button class="column-title" on:click={() => sortInventoryClickHandler('display_name')}>
 				<span class="column-name">Name</span>
-				<div class="sort-arrows">
-					<img
-						class:active={ascendingSort && selectedSortColumn == 'display_name'}
-						class:inactive={!ascendingSort && selectedSortColumn == 'display_name'}
-						src="/sort_arrow_ascending.svg"
-						alt="Ascending sort"
-					/>
-					<img
-						class:active={!ascendingSort && selectedSortColumn == 'display_name'}
-						class:inactive={ascendingSort && selectedSortColumn == 'display_name'}
-						src="/sort_arrow_descending.svg"
-						alt="Descending sort"
-					/>
-				</div>
+				<SortArrows ascending={ascendingSort} selected={selectedSortColumn == 'display_name'} />
 			</button>
 			<button class="column-title" on:click={() => sortInventoryClickHandler('count')}>
 				<span class="column-name">Count</span>
-				<div class="sort-arrows">
-					<img
-						class:active={ascendingSort && selectedSortColumn == 'count'}
-						class:inactive={!ascendingSort && selectedSortColumn == 'count'}
-						src="/sort_arrow_ascending.svg"
-						alt="Ascending sort"
-					/>
-					<img
-						class:active={!ascendingSort && selectedSortColumn == 'count'}
-						class:inactive={ascendingSort && selectedSortColumn == 'count'}
-						src="/sort_arrow_descending.svg"
-						alt="Descending sort"
-					/>
-				</div>
+				<SortArrows ascending={ascendingSort} selected={selectedSortColumn == 'count'} />
 			</button>
 			<button class="column-title" on:click={() => sortInventoryClickHandler('cost')}>
 				<span class="column-name">Cost</span>
-				<div class="sort-arrows">
-					<img
-						class:active={ascendingSort && selectedSortColumn == 'cost'}
-						class:inactive={!ascendingSort && selectedSortColumn == 'cost'}
-						src="/sort_arrow_ascending.svg"
-						alt="Ascending sort"
-					/>
-					<img
-						class:active={!ascendingSort && selectedSortColumn == 'cost'}
-						class:inactive={ascendingSort && selectedSortColumn == 'cost'}
-						src="/sort_arrow_descending.svg"
-						alt="Descending sort"
-					/>
-				</div>
+				<SortArrows ascending={ascendingSort} selected={selectedSortColumn == 'cost'} />
 			</button>
 			<button class="column-title" on:click={() => sortInventoryClickHandler('price')}>
 				<span class="column-name">Price</span>
-				<div class="sort-arrows">
-					<img
-						class:active={ascendingSort && selectedSortColumn == 'price'}
-						class:inactive={!ascendingSort && selectedSortColumn == 'price'}
-						src="/sort_arrow_ascending.svg"
-						alt="Ascending sort"
-					/>
-					<img
-						class:active={!ascendingSort && selectedSortColumn == 'price'}
-						class:inactive={ascendingSort && selectedSortColumn == 'price'}
-						src="/sort_arrow_descending.svg"
-						alt="Descending sort"
-					/>
-				</div>
+				<SortArrows ascending={ascendingSort} selected={selectedSortColumn == 'price'} />
 			</button>
 		</div>
 		<div class="table-body gray-outline">
@@ -363,26 +299,6 @@
 			align-items: center;
 			background-color: transparent;
 			border: none;
-		}
-
-		.sort-arrows {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			gap: 3px;
-			padding-left: 7px;
-
-			img {
-				opacity: 0;
-			}
-
-			img.active {
-				opacity: 0.8;
-			}
-
-			img.inactive {
-				opacity: 0.4;
-			}
 		}
 
 		.table-body {
