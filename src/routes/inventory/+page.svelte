@@ -1,4 +1,8 @@
 <script lang="ts">
+	import Decimal from 'decimal.js';
+	import { goto } from '$app/navigation';
+	export let data;
+
 	function formatSku(sku: number) {
 		return '#' + sku.toString().padStart(7, '0');
 	}
@@ -18,9 +22,6 @@
 		goto(`/inventory?column=${column}&direction=${ascendingSort ? 'asc' : 'desc'}`);
 	}
 
-	import Decimal from 'decimal.js';
-	import { goto } from '$app/navigation';
-
 	type InventoryItem = {
 		sku: number;
 		display_name: string;
@@ -29,17 +30,31 @@
 		price: Decimal;
 	};
 
-	export let data;
-
-	let selectedSortColumn = 'sku';
-	let ascendingSort = true;
+	let searchQuery = '';
+	let selectedSortColumn = data.column;
+	let ascendingSort = data.direction === 'asc';
 
 	let recordsPerPage = 10;
 	let page = 1;
 
-	$: pages = Math.ceil(data.inventoryJson.length / recordsPerPage);
-	$: inventory = data.inventoryJson
-		.map((item: InventoryItem) => {
+	$: pages = Math.ceil(inventory.length / recordsPerPage);
+	$: windowedInventory = inventory.slice((page - 1) * recordsPerPage, page * recordsPerPage);
+	$: inventory = (data.inventoryJson as any[])
+		.filter((item) => {
+			if (searchQuery !== '') {
+				let searchQueryLower = searchQuery.toLowerCase();
+				let searchFields = [item.sku, item.display_name, item.count, item.cost, item.price].map(
+					(field) => field.toString().toLowerCase()
+				);
+
+				if (!searchFields.some((field) => field.includes(searchQueryLower))) {
+					return false;
+				}
+			}
+
+			return true;
+		})
+		.map((item) => {
 			let parsedItem: InventoryItem = {
 				...item,
 				cost: new Decimal(item.cost),
@@ -47,8 +62,7 @@
 			};
 
 			return parsedItem;
-		})
-		.slice((page - 1) * recordsPerPage, page * recordsPerPage);
+		});
 </script>
 
 <nav class="menu">
@@ -59,23 +73,21 @@
 
 <div class="page-body">
 	<div class="table-menu">
-		<div class="quick-search gray-outline">
-			<span>Quick search...</span>
-		</div>
+		<input
+			class="quick-search gray-outline"
+			bind:value={searchQuery}
+			placeholder="Quick search..."
+		/>
 		<div class="filter gray-outline"><span>Filter</span></div>
 		<div class="spacer"></div>
 		<div class="menu-right">
 			<div class="records-per-page">
 				<div class="label"><span>Records per page:</span></div>
-				<div class="value gray-outline">
-					<input type="number" bind:value={recordsPerPage} />
-				</div>
+				<input class="gray-outline" type="number" bind:value={recordsPerPage} />
 			</div>
 			<div class="page-number">
 				<div class="prefix-label"><span>Page:</span></div>
-				<div class="value gray-outline">
-					<input type="number" bind:value={page} />
-				</div>
+				<input class="gray-outline" type="number" bind:value={page} />
 				<div class="suffix-label"><span>of <strong>{pages}</strong></span></div>
 			</div>
 			<div class="page-navigation">
@@ -190,7 +202,7 @@
 			</button>
 		</div>
 		<div class="table-body gray-outline">
-			{#each inventory as inventoryItem}
+			{#each windowedInventory as inventoryItem}
 				<div class="row">
 					<span class="grid-item">{formatSku(inventoryItem.sku)}</span>
 					<span class="grid-item">{inventoryItem.display_name}</span>
@@ -295,28 +307,26 @@
 
 		input {
 			background-color: transparent;
-			border: none;
 			color: white;
 			font-size: 16px;
-			text-align: center;
+			text-align: left;
 		}
 
 		.records-per-page {
 			input {
-				width: 3em;
+				width: 2em;
 			}
 		}
 
 		.page-number {
 			input {
-				width: 2em;
+				width: 1.2em;
 			}
 		}
 
 		.quick-search {
 			flex-grow: 2;
 			max-width: 270px;
-			color: rgba(255, 255, 255, 0.6);
 		}
 
 		.spacer {

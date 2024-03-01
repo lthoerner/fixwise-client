@@ -3,5 +3,5 @@ export async function load({ fetch, url }) {
     const direction = url.searchParams.get('direction') ?? 'asc';
     let inventoryJson = await (await fetch(`http://localhost:8080/inventory?column=${column}&direction=${direction}`)).json();
 
-    return { inventoryJson };
+    return { column, direction, inventoryJson };
 }
