@@ -1,7 +1,6 @@
 export async function load({ fetch, url }) {
-    const column = url.searchParams.get('column') ?? 'sku';
-    const direction = url.searchParams.get('direction') ?? 'asc';
-    let inventoryJson = await (await fetch(`http://localhost:8080/inventory?column=${column}&direction=${direction}`)).json();
+    const inventorySchema = (await (await fetch(`http://localhost:8080/inventory/schema`)).json())['table_fields'];
+    const inventoryJson = await (await fetch(`http://localhost:8080/inventory`)).json();
 
-    return { column, direction, inventoryJson };
+    return { inventorySchema, inventoryJson };
 }

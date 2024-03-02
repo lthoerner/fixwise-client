@@ -8,12 +8,10 @@
 			selectedColumn = columnName;
 			ascending = true;
 		}
-
-		goto(`/inventory?column=${selectedColumn}&direction=${ascending ? 'asc' : 'desc'}`);
 	}
 
-	export let displayName: string;
 	export let columnName: string;
+	export let displayName: string;
 	export let selectedColumn: string;
 	export let ascending: boolean;
 	$: selected = columnName === selectedColumn;

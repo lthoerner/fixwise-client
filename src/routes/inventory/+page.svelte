@@ -3,12 +3,61 @@
 	import ColumnTitle from './ColumnTitle.svelte';
 	export let data;
 
-	function formatSku(sku: number) {
-		return '#' + sku.toString().padStart(7, '0');
+	type ColumnSchemaRecord = {
+		true_name: string;
+		display_name: string;
+		search_weight: number;
+		data_type: string;
+		formatting: ColumnFormatting;
+	};
+
+	type ColumnSchema = {
+		display_name: string;
+		search_weight: number;
+		data_type: string;
+		formatting: ColumnFormatting;
+	};
+
+	type ColumnFormatting = {
+		prefix: string;
+		suffix: string;
+		pad_length: number;
+	};
+
+	function parseInventory() {
+		let inventory = data.inventoryJson;
+
+		for (const [column_name, column_metadata] of columns.entries()) {
+			if (column_metadata.data_type === 'decimal') {
+				for (let item of inventory) {
+					item[column_name] = new Decimal(item[column_name]);
+				}
+			}
+		}
+
+		return inventory;
 	}
 
-	function formatCurrency(value: Decimal) {
-		return value.toFixed(2);
+	function format(item: any) {
+		let formattedItem = { ...item };
+		for (const [column_name, column_metadata] of columns.entries()) {
+			let value = item[column_name];
+
+			if (column_metadata.data_type === 'decimal') {
+				value = new Decimal(value).toFixed(2).toString();
+			}
+
+			if (column_metadata.formatting) {
+				if (column_metadata.formatting.pad_length) {
+					value = value.toString().padStart(column_metadata.formatting.pad_length, '0');
+				}
+
+				formattedItem[column_name] =
+					`${column_metadata.formatting.prefix ?? ''}${value}${column_metadata.formatting.suffix ?? ''}`;
+			}
+		}
+
+		return formattedItem;
 	}
 
 	function turnPage(next: boolean) {
@@ -27,49 +76,72 @@
 		}
 	}
 
-	type InventoryItem = {
-		sku: number;
-		display_name: string;
-		count: number;
-		cost: Decimal;
-		price: Decimal;
-	};
+	const columns: Map<string, ColumnSchema> = new Map();
+	for (const column of data.inventorySchema as ColumnSchemaRecord[]) {
+		columns.set(column.true_name, column as ColumnSchema);
+	}
+
+	const inventory: any[] = parseInventory();
 
 	let searchQuery = '';
-	let selectedSortColumn = data.column;
-	let ascendingSort = data.direction === 'asc';
+	let selectedSortColumn = 'sku';
+	let ascendingSort = true;
 
 	let recordsPerPage = 10;
 	let page = 1;
 
 	$: page = page < pages ? page : pages;
 	$: page = page > 0 ? page : 1;
-	$: pages = Math.ceil(inventory.length / recordsPerPage);
-	$: windowedInventory = inventory.slice((page - 1) * recordsPerPage, page * recordsPerPage);
-	$: inventory = (data.inventoryJson as any[])
+	$: pages = Math.ceil(searchedInventory.length / recordsPerPage);
+
+	$: windowedInventory = searchedInventory.slice(
+		(page - 1) * recordsPerPage,
+		page * recordsPerPage
+	);
+	$: searchedInventory = inventory
 		.filter((item) => {
 			if (searchQuery !== '') {
-				let searchQueryLower = searchQuery.toLowerCase();
-				let searchFields = [item.sku, item.display_name, item.count, item.cost, item.price].map(
-					(field) => field.toString().toLowerCase()
-				);
+				const searchQueryLower = searchQuery.toLowerCase();
+				for (const column of columns.keys()) {
+					const searchColumn = item[column].toString().toLowerCase();
+					if (searchColumn.includes(searchQueryLower)) {
+						return item;
+					}
+				}
 
-				if (!searchFields.some((field) => field.includes(searchQueryLower))) {
-					return false;
+				return;
+			}
+
+			return item;
+		})
+		.sort((a, b) => {
+			const nameA = a[selectedSortColumn];
+			const nameB = b[selectedSortColumn];
+
+			const column = columns.get(selectedSortColumn);
+			if (column && column.data_type === 'decimal') {
+				return ascendingSort ? new Decimal(nameA).cmp(nameB) : new Decimal(nameB).cmp(nameA);
+			}
+
+			if (ascendingSort) {
+				if (nameA < nameB) {
+					return -1;
+				}
+				if (nameA > nameB) {
+					return 1;
+				}
+			} else {
+				if (nameA < nameB) {
+					return 1;
+				}
+				if (nameA > nameB) {
+					return -1;
 				}
 			}
 
-			return true;
+			return 0;
 		})
-		.map((item) => {
-			let parsedItem: InventoryItem = {
-				...item,
-				cost: new Decimal(item.cost),
-				price: new Decimal(item.price)
-			};
-
-			return parsedItem;
-		});
+		.map(format);
 </script>
 
 <nav class="menu">
@@ -110,45 +182,21 @@
 
 	<div class="table gray-outline">
 		<div class="column-header">
-			<ColumnTitle
-				displayName="SKU"
-				columnName="sku"
-				bind:selectedColumn={selectedSortColumn}
-				bind:ascending={ascendingSort}
-			/>
-			<ColumnTitle
-				displayName="Name"
-				columnName="display_name"
-				bind:selectedColumn={selectedSortColumn}
-				bind:ascending={ascendingSort}
-			/>
-			<ColumnTitle
-				displayName="Count"
-				columnName="count"
-				bind:selectedColumn={selectedSortColumn}
-				bind:ascending={ascendingSort}
-			/>
-			<ColumnTitle
-				displayName="Cost"
-				columnName="cost"
-				bind:selectedColumn={selectedSortColumn}
-				bind:ascending={ascendingSort}
-			/>
-			<ColumnTitle
-				displayName="Price"
-				columnName="price"
-				bind:selectedColumn={selectedSortColumn}
-				bind:ascending={ascendingSort}
-			/>
+			{#each columns as [column_name, column_metadata]}
+				<ColumnTitle
+					columnName={column_name}
+					displayName={column_metadata.display_name}
+					bind:selectedColumn={selectedSortColumn}
+					bind:ascending={ascendingSort}
+				/>
+			{/each}
 		</div>
 		<div class="table-body gray-outline">
 			{#each windowedInventory as inventoryItem}
 				<div class="row">
-					<span class="grid-item">{formatSku(inventoryItem.sku)}</span>
-					<span class="grid-item">{inventoryItem.display_name}</span>
-					<span class="grid-item">{inventoryItem.count}</span>
-					<span class="grid-item">{formatCurrency(inventoryItem.cost)}</span>
-					<span class="grid-item">{formatCurrency(inventoryItem.price)}</span>
+					{#each columns as [column, _]}
+						<span class="grid-item">{inventoryItem[column]}</span>
+					{/each}
 				</div>
 			{/each}
 		</div>
@@ -307,8 +355,7 @@
 
 		.column-header {
 			display: grid;
-			grid-template-columns: repeat(5, 20%);
-			grid-template-rows: 1;
+			grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
 			padding-left: 15px;
 			padding-right: 15px;
 			margin-top: 12px;
@@ -322,9 +369,7 @@
 
 		.row {
 			display: grid;
-			grid-template-columns: repeat(5, 20%);
-			grid-column-start: 1;
-			grid-column-end: 6;
+			grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
 			padding-left: 15px;
 			padding-right: 15px;
 			padding-top: 10px;
