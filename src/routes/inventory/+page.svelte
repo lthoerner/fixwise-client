@@ -60,6 +60,50 @@
 		return formattedItem;
 	}
 
+	function search(item: any, searchQuery: string) {
+		if (searchQuery !== '') {
+			const searchQueryLower = searchQuery.toLowerCase();
+			for (const column of columns.keys()) {
+				const searchColumn = item[column].toString().toLowerCase();
+				if (searchColumn.includes(searchQueryLower)) {
+					return item;
+				}
+			}
+
+			return;
+		}
+
+		return item;
+	}
+
+	function compare(a: any, b: any, selectedSortColumn: string, ascendingSort: boolean) {
+		const nameA = a[selectedSortColumn];
+		const nameB = b[selectedSortColumn];
+
+		const column = columns.get(selectedSortColumn);
+		if (column && column.data_type === 'decimal') {
+			return ascendingSort ? new Decimal(nameA).cmp(nameB) : new Decimal(nameB).cmp(nameA);
+		}
+
+		if (ascendingSort) {
+			if (nameA < nameB) {
+				return -1;
+			}
+			if (nameA > nameB) {
+				return 1;
+			}
+		} else {
+			if (nameA < nameB) {
+				return 1;
+			}
+			if (nameA > nameB) {
+				return -1;
+			}
+		}
+
+		return 0;
+	}
+
 	function turnPage(next: boolean) {
 		if (next) {
 			if (page < pages) {
@@ -99,48 +143,8 @@
 		page * recordsPerPage
 	);
 	$: searchedInventory = inventory
-		.filter((item) => {
-			if (searchQuery !== '') {
-				const searchQueryLower = searchQuery.toLowerCase();
-				for (const column of columns.keys()) {
-					const searchColumn = item[column].toString().toLowerCase();
-					if (searchColumn.includes(searchQueryLower)) {
-						return item;
-					}
-				}
-
-				return;
-			}
-
-			return item;
-		})
-		.sort((a, b) => {
-			const nameA = a[selectedSortColumn];
-			const nameB = b[selectedSortColumn];
-
-			const column = columns.get(selectedSortColumn);
-			if (column && column.data_type === 'decimal') {
-				return ascendingSort ? new Decimal(nameA).cmp(nameB) : new Decimal(nameB).cmp(nameA);
-			}
-
-			if (ascendingSort) {
-				if (nameA < nameB) {
-					return -1;
-				}
-				if (nameA > nameB) {
-					return 1;
-				}
-			} else {
-				if (nameA < nameB) {
-					return 1;
-				}
-				if (nameA > nameB) {
-					return -1;
-				}
-			}
-
-			return 0;
-		})
+		.filter((item) => search(item, searchQuery))
+		.sort((a, b) => compare(a, b, selectedSortColumn, ascendingSort))
 		.map(format);
 </script>
 
