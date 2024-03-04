@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Decimal from 'decimal.js';
+	import SelectorBox from './SelectorBox.svelte';
 	import ColumnTitle from './ColumnTitle.svelte';
 	export let data;
 
@@ -24,8 +25,13 @@
 		pad_length: number;
 	};
 
-	type BooleanMap = {
-		[key: string]: boolean;
+	type SelectorMap = {
+		[option: string]: SelectorItem;
+	};
+
+	type SelectorItem = {
+		displayName: string;
+		selected: boolean;
 	};
 
 	function parseInventory() {
@@ -143,7 +149,7 @@
 	const inventory: any[] = parseInventory();
 
 	let searchQuery = '';
-	let selectedSortColumn = 'sku';
+	let selectedSortColumn = columns.keys().next().value;
 	let ascendingSort = true;
 
 	let recordsPerPage = 10;
@@ -151,8 +157,11 @@
 
 	let selectingFilterColumn = false;
 	let selectingFilterCriteria = false;
-	let selectedFilterColumns: BooleanMap = {};
-	columns.forEach((_, column) => (selectedFilterColumns[column] = false));
+	let selectedFilterColumns: SelectorMap = {};
+	columns.forEach(
+		(metadata, column) =>
+			(selectedFilterColumns[column] = { displayName: metadata.display_name, selected: false })
+	);
 
 	$: page = page < pages ? page : pages;
 	$: page = page > 0 ? page : 1;
@@ -185,25 +194,9 @@
 			class="filter menu-padding flex-row medium-text gray-outline"
 			on:click={advanceFilterStep}
 		>
-			<!-- <span>{selectingFilterColumn || selectingFilterCriteria ? '+' : 'Add\xa0Filter'}</span> -->
 			<span>Filter</span>
 		</button>
-		<div
-			class="flex-row medium-text gray-outline"
-			class:hidden={!selectingFilterColumn && !selectingFilterCriteria}
-		>
-			{#each columns as [column_name, column_metadata]}
-				<button
-					class="filter-column menu-padding flex-row medium-text"
-					class:selected={selectedFilterColumns[column_name]}
-					on:click={() => {
-						selectedFilterColumns[column_name] = !selectedFilterColumns[column_name];
-					}}
-				>
-					{column_metadata.display_name}
-				</button>
-			{/each}
-		</div>
+		<SelectorBox bind:options={selectedFilterColumns} />
 		<input class="menu-padding medium-text gray-outline" class:hidden={!selectingFilterCriteria} />
 		<div class="menu-right flex-row">
 			<div class="records-per-page flex-row">
@@ -392,20 +385,6 @@
 			transition: 0.23s ease-out;
 
 			&:hover {
-				background-color: gray;
-				transition: 0.23s ease-out;
-			}
-		}
-
-		.filter-column {
-			transition: 0.23s ease-out;
-
-			&:hover {
-				background-color: rgba(255, 255, 255, 0.25);
-				transition: 0.23s ease-out;
-			}
-
-			&.selected {
 				background-color: gray;
 				transition: 0.23s ease-out;
 			}
