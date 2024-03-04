@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-
 	function sort() {
 		if (selected) {
 			ascending = !ascending;
