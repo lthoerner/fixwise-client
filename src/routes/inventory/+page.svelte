@@ -53,7 +53,7 @@
 		for (const [column_name, column_metadata] of columns.entries()) {
 			let value = item[column_name];
 
-			if (column_metadata.data_type === 'decimal') {
+			if (column_metadata.data_type == 'decimal') {
 				value = new Decimal(value).toFixed(2).toString();
 			}
 
@@ -71,7 +71,7 @@
 	}
 
 	function search(item: any, searchQuery: string) {
-		if (searchQuery !== '') {
+		if (searchQuery != '') {
 			const searchQueryLower = searchQuery.toLowerCase();
 			for (const column of columns.keys()) {
 				const searchColumn = item[column].toString().toLowerCase();

@@ -12,7 +12,7 @@
 	export let displayName: string;
 	export let selectedColumn: string;
 	export let ascending: boolean;
-	$: selected = columnName === selectedColumn;
+	$: selected = columnName == selectedColumn;
 </script>
 
 <button on:click={sort}>
