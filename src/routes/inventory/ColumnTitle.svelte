@@ -80,7 +80,7 @@
 		}
 
 		img.inactive {
-			opacity: 0.4;
+			opacity: 0.3;
 			transition: 0.3s ease-out;
 		}
 	}

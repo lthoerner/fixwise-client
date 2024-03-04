@@ -24,6 +24,10 @@
 		pad_length: number;
 	};
 
+	type BooleanMap = {
+		[key: string]: boolean;
+	};
+
 	function parseInventory() {
 		let inventory = data.inventoryJson;
 
@@ -120,6 +124,17 @@
 		}
 	}
 
+	function advanceFilterStep() {
+		if (!selectingFilterColumn && !selectingFilterCriteria) {
+			selectingFilterColumn = true;
+		} else if (selectingFilterColumn) {
+			selectingFilterColumn = false;
+			selectingFilterCriteria = true;
+		} else if (selectingFilterCriteria) {
+			selectingFilterCriteria = false;
+		}
+	}
+
 	const columns: Map<string, ColumnSchema> = new Map();
 	for (const column of data.inventorySchema as ColumnSchemaRecord[]) {
 		columns.set(column.true_name, column as ColumnSchema);
@@ -133,6 +148,11 @@
 
 	let recordsPerPage = 10;
 	let page = 1;
+
+	let selectingFilterColumn = false;
+	let selectingFilterCriteria = false;
+	let selectedFilterColumns: BooleanMap = {};
+	columns.forEach((_, column) => (selectedFilterColumns[column] = false));
 
 	$: page = page < pages ? page : pages;
 	$: page = page > 0 ? page : 1;
@@ -148,32 +168,58 @@
 		.map(format);
 </script>
 
-<nav class="menu">
+<nav class="menu flex-row title-text">
 	<a href="/inventory">Inventory</a>
 	<a href="/tickets">Tickets</a>
 	<a href="/customers">Customers</a>
 </nav>
 
 <div class="page-body">
-	<div class="table-menu">
+	<div class="table-menu flex-row">
 		<input
-			class="quick-search gray-outline"
+			class="quick-search menu-padding medium-text gray-outline"
 			bind:value={searchQuery}
 			placeholder="Quick search..."
 		/>
-		<div class="filter gray-outline"><span>Filter</span></div>
-		<div class="spacer"></div>
-		<div class="menu-right">
-			<div class="records-per-page">
-				<div class="label"><span>Records per page:</span></div>
-				<input class="gray-outline" type="number" bind:value={recordsPerPage} />
+		<button
+			class="filter menu-padding flex-row medium-text gray-outline"
+			on:click={advanceFilterStep}
+		>
+			<!-- <span>{selectingFilterColumn || selectingFilterCriteria ? '+' : 'Add\xa0Filter'}</span> -->
+			<span>Filter</span>
+		</button>
+		<div
+			class="flex-row medium-text gray-outline"
+			class:hidden={!selectingFilterColumn && !selectingFilterCriteria}
+		>
+			{#each columns as [column_name, column_metadata]}
+				<button
+					class="filter-column menu-padding flex-row medium-text"
+					class:selected={selectedFilterColumns[column_name]}
+					on:click={() => {
+						selectedFilterColumns[column_name] = !selectedFilterColumns[column_name];
+					}}
+				>
+					{column_metadata.display_name}
+				</button>
+			{/each}
+		</div>
+		<input class="menu-padding medium-text gray-outline" class:hidden={!selectingFilterCriteria} />
+		<div class="menu-right flex-row">
+			<div class="records-per-page flex-row">
+				<div class="menu-padding"><span>Records per page:</span></div>
+				<input
+					class="menu-padding medium-text gray-outline"
+					type="number"
+					bind:value={recordsPerPage}
+				/>
 			</div>
-			<div class="page-number">
-				<div class="prefix-label"><span>Page:</span></div>
-				<input class="gray-outline" type="number" bind:value={page} />
-				<div class="suffix-label"><span>of <strong>{pages}</strong></span></div>
+			<div class="page-number flex-row">
+				<div class="menu-padding"><span>Page:</span></div>
+				<input class="menu-padding medium-text gray-outline" type="number" bind:value={page} />
+				<div class="menu-padding"><span>of <strong>{pages}</strong></span></div>
 			</div>
-			<div class="page-navigation">
+			<div class="page-navigation flex-row">
 				<button on:click={() => turnPage(false)}>
 					<img src="/page_navigator_previous.svg" alt="Next page" />
 				</button>
@@ -195,11 +241,11 @@
 				/>
 			{/each}
 		</div>
-		<div class="table-body gray-outline">
+		<div class="table-body gray-outline-top">
 			{#each windowedInventory as inventoryItem}
 				<div class="row">
 					{#each columns as [column, _]}
-						<span class="grid-item">{inventoryItem[column]}</span>
+						<span class="grid-item large-text">{inventoryItem[column]}</span>
 					{/each}
 				</div>
 			{/each}
@@ -215,8 +261,11 @@
 	}
 
 	a,
-	span {
+	span,
+	input,
+	button {
 		font-family: 'Helvetica', sans-serif;
+		color: white;
 	}
 
 	input::-webkit-outer-spin-button,
@@ -236,6 +285,40 @@
 		border: none;
 	}
 
+	input {
+		background-color: transparent;
+		text-align: left;
+
+		&:focus {
+			outline: none;
+		}
+	}
+
+	.hidden {
+		display: none !important;
+	}
+
+	.flex-row {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		overflow: hidden;
+	}
+
+	.title-text {
+		font-size: 36px;
+		font-weight: bold;
+	}
+
+	.large-text {
+		font-size: 18px;
+	}
+
+	.medium-text {
+		font-size: 16px;
+	}
+
 	.gray-outline {
 		border-style: solid;
 		border-width: 2px;
@@ -243,11 +326,13 @@
 		border-radius: 0.6em;
 	}
 
+	.gray-outline-top {
+		border-top-style: solid;
+		border-top-width: 2px;
+		border-top-color: gray;
+	}
+
 	.menu {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: nowrap;
-		align-items: center;
 		background-color: purple;
 
 		a {
@@ -255,8 +340,6 @@
 			padding-bottom: 3px;
 			padding-left: 25px;
 			padding-right: 25px;
-			font-size: 35px;
-			font-weight: bold;
 			text-decoration: none;
 			margin-top: 15px;
 			margin-bottom: 10px;
@@ -279,56 +362,53 @@
 	}
 
 	.table-menu {
-		display: flex;
-		flex-direction: row;
 		gap: 15px;
-		font-size: 16px;
-		color: white;
-
-		div {
-			display: flex;
-			flex-direction: row;
-			align-items: center;
-		}
 
 		.menu-right {
+			margin-left: auto;
 			gap: 7px;
 		}
 
-		span,
-		input {
+		.menu-padding {
 			padding-top: 7px;
 			padding-bottom: 7px;
 			padding-left: 10px;
 			padding-right: 10px;
 		}
 
-		input {
-			background-color: transparent;
-			color: white;
-			font-size: 16px;
-			text-align: left;
-		}
-
-		.records-per-page {
+		.records-per-page,
+		.page-number {
 			input {
 				width: 2em;
 			}
 		}
 
-		.page-number {
-			input {
-				width: 1.2em;
+		.quick-search {
+			flex-grow: 2;
+			max-width: 250px;
+		}
+
+		.filter {
+			transition: 0.23s ease-out;
+
+			&:hover {
+				background-color: gray;
+				transition: 0.23s ease-out;
 			}
 		}
 
-		.quick-search {
-			flex-grow: 2;
-			max-width: 270px;
-		}
+		.filter-column {
+			transition: 0.23s ease-out;
 
-		.spacer {
-			flex-grow: 1;
+			&:hover {
+				background-color: rgba(255, 255, 255, 0.25);
+				transition: 0.23s ease-out;
+			}
+
+			&.selected {
+				background-color: gray;
+				transition: 0.23s ease-out;
+			}
 		}
 
 		.page-navigation {
@@ -352,8 +432,6 @@
 		padding: 15px;
 
 		.grid-item {
-			color: white;
-			font-size: 18px;
 			padding-left: 3px;
 		}
 
@@ -368,7 +446,6 @@
 
 		.table-body {
 			padding-top: 10px;
-			padding-bottom: 10px;
 		}
 
 		.row {
@@ -379,11 +456,12 @@
 			padding-top: 10px;
 			padding-bottom: 10px;
 			transition: 0.3s ease-out;
+			border-radius: 0.6em;
 
 			&:hover {
 				transform: translateY(-2px);
 				font-size: 20px;
-				padding-left: 13px;
+				padding-left: 12px;
 				background-color: rgba(255, 255, 255, 0.05);
 				transition: 0.3s ease-out;
 			}
