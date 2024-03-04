@@ -1,21 +1,21 @@
 <script lang="ts">
-	function sort() {
+	function sortColumn() {
 		if (selected) {
 			ascending = !ascending;
 		} else {
-			selectedColumn = columnName;
+			selectedColumn = trueName;
 			ascending = true;
 		}
 	}
 
-	export let columnName: string;
+	export let trueName: string;
 	export let displayName: string;
 	export let selectedColumn: string;
 	export let ascending: boolean;
-	$: selected = columnName == selectedColumn;
+	$: selected = selectedColumn == trueName;
 </script>
 
-<button on:click={sort}>
+<button on:click={sortColumn}>
 	<span>{displayName}</span>
 	<div>
 		<img

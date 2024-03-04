@@ -30,7 +30,7 @@
 	};
 
 	type SelectorItem = {
-		displayName: string;
+		display_name: string;
 		selected: boolean;
 	};
 
@@ -160,7 +160,7 @@
 	let selectedFilterColumns: SelectorMap = {};
 	columns.forEach(
 		(metadata, column) =>
-			(selectedFilterColumns[column] = { displayName: metadata.display_name, selected: false })
+			(selectedFilterColumns[column] = { display_name: metadata.display_name, selected: false })
 	);
 
 	$: page = page < pages ? page : pages;
@@ -227,7 +227,7 @@
 		<div class="column-header">
 			{#each columns as [column_name, column_metadata]}
 				<ColumnTitle
-					columnName={column_name}
+					trueName={column_name}
 					displayName={column_metadata.display_name}
 					bind:selectedColumn={selectedSortColumn}
 					bind:ascending={ascendingSort}

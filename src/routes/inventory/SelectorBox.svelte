@@ -4,7 +4,7 @@
 	};
 
 	type SelectorItem = {
-		displayName: string;
+		display_name: string;
 		selected: boolean;
 	};
 
@@ -18,7 +18,7 @@
 			class:selected={option.selected}
 			on:click={() => (option.selected = !option.selected)}
 		>
-			{option.displayName}
+			{option.display_name}
 		</button>
 	{/each}
 </div>
