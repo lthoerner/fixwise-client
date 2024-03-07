@@ -425,13 +425,17 @@
 			{/each}
 		</div>
 		<div class="table-body gray-outline-top">
-			{#each windowedInventory as inventoryItem}
-				<div class="row">
-					{#each columns as [column, _]}
-						<span class="grid-item large-text">{inventoryItem[column]}</span>
-					{/each}
-				</div>
-			{/each}
+			{#if searchedInventory.length > 0}
+				{#each windowedInventory as inventoryItem}
+					<div class="row">
+						{#each columns as [column, _]}
+							<span class="grid-item large-text">{inventoryItem[column]}</span>
+						{/each}
+					</div>
+				{/each}
+			{:else}
+				<div class="placeholder-row flex-row"><span>No items to show</span></div>
+			{/if}
 		</div>
 	</div>
 </div>
@@ -643,6 +647,15 @@
 				background-color: rgba(255, 255, 255, 0.05);
 				transition: 0.3s ease-out;
 			}
+		}
+
+		.placeholder-row {
+			font-size: 20px;
+			justify-content: center;
+			align-items: center;
+			padding-top: 20px;
+			padding-bottom: 14px;
+			padding-left: 15px;
 		}
 	}
 </style>
