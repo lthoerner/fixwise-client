@@ -177,13 +177,13 @@
 
 	function turnPage(next: boolean) {
 		if (next) {
-			if (page < pages) {
+			if (page && page < pages) {
 				page++;
 			} else {
 				page = 1;
 			}
 		} else {
-			if (page > 1) {
+			if (page && page > 1) {
 				page--;
 			} else {
 				page = pages;
@@ -240,7 +240,7 @@
 	let ascendingSort = true;
 
 	let recordsPerPage = 10;
-	let page = 1;
+	let page: number | null = 1;
 
 	let searchQuery = '';
 	let filterQuery = '';
@@ -281,8 +281,11 @@
 
 	$: allFilterColumnsNumeric = allColumnsNumeric(selectedFilterColumns);
 
-	$: page = page < pages ? page : pages;
-	$: realPage = page > 0 ? page : 1;
+	$: page = page = page == 0 ? null : page;
+	$: if (page) {
+		page = page < pages ? page : pages;
+	}
+	$: realPage = page && page > 0 ? page : 1;
 	$: pages = Math.ceil(searchedInventory.length / recordsPerPage);
 
 	$: windowedInventory = searchedInventory.slice(
@@ -375,31 +378,39 @@
 				<span>{filters.length}</span>
 			</div>
 		{/if}
-		<div class="menu-right flex-row">
-			<div class="records-per-page flex-row">
-				<div class="menu-padding"><span>Records per page:</span></div>
-				<input
-					class="menu-padding medium-text gray-outline"
-					type="number"
-					bind:value={recordsPerPage}
-				/>
-			</div>
-			<div class="page-number flex-row">
-				<div class="menu-padding"><span>Page:</span></div>
-				<input class="menu-padding medium-text gray-outline" type="number" bind:value={page} />
-				<div class="menu-padding">
-					<span>of <strong>{recordsPerPage > 0 ? pages : '?'}</strong></span>
+		{#if searchedInventory.length > 0}
+			<div class="menu-right flex-row">
+				<div class="records-per-page flex-row">
+					<div class="menu-padding"><span>Records per page:</span></div>
+					<input
+						class="menu-padding medium-text gray-outline"
+						type="number"
+						bind:value={recordsPerPage}
+					/>
+				</div>
+				<div class="page-number flex-row">
+					<div class="menu-padding"><span>Page:</span></div>
+					<input class="menu-padding medium-text gray-outline" type="number" bind:value={page} />
+					<div class="menu-padding">
+						<span>of <strong>{recordsPerPage > 0 ? pages : '?'}</strong></span>
+					</div>
+				</div>
+				<div class="page-navigation flex-row">
+					<button on:click={() => turnPage(false)}>
+						<img src="/page_navigator_previous.svg" alt="Navigate to next page" />
+					</button>
+					<button on:click={() => turnPage(true)}>
+						<img src="/page_navigator_next.svg" alt="Navigate to previous page" />
+					</button>
 				</div>
 			</div>
-			<div class="page-navigation flex-row">
-				<button on:click={() => turnPage(false)}>
-					<img src="/page_navigator_previous.svg" alt="Navigate to next page" />
-				</button>
-				<button on:click={() => turnPage(true)}>
-					<img src="/page_navigator_next.svg" alt="Navigate to previous page" />
-				</button>
+		{:else}
+			<div class="menu-right flex-row">
+				<div class="menu-padding">
+					<span><strong>No pages to show</strong></span>
+				</div>
 			</div>
-		</div>
+		{/if}
 	</div>
 
 	<div class="table gray-outline">
