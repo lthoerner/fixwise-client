@@ -1,22 +1,45 @@
 <script lang="ts">
-	type SelectorMap = {
-		[option: string]: SelectorItem;
+	type Selector = {
+		options: NamedItem[];
+		selected: string[];
 	};
 
-	type SelectorItem = {
+	type NamedItem = {
+		true_name: string;
 		display_name: string;
-		selected: boolean;
 	};
 
-	export let options: SelectorMap;
+	function select(option: string) {
+		if (selector.selected.includes(option)) {
+			if (!required) {
+				selector.selected = selector.selected.filter((selectedOption) => selectedOption != option);
+			}
+		} else {
+			if (exclusive) {
+				selector.selected = [option];
+			} else {
+				selector.selected = [...selector.selected, option];
+			}
+		}
+	}
+
+	function isSelected(option: string) {
+		return selector.selected.includes(option);
+	}
+
+	export let selector: Selector;
+	export let exclusive: boolean = false;
+	export let required: boolean = false;
+	export let horizontalPadding: number = 10;
 </script>
 
 <div class="flex-row gray-outline">
-	{#each Object.values(options) as option}
+	{#each selector.options as option}
 		<button
 			class="menu-padding medium-text"
-			class:selected={option.selected}
-			on:click={() => (option.selected = !option.selected)}
+			style="padding-left: {horizontalPadding}px; padding-right: {horizontalPadding}px;"
+			class:selected={isSelected(option.true_name)}
+			on:click={() => select(option.true_name)}
 		>
 			{option.display_name}
 		</button>
@@ -46,8 +69,6 @@
 	.menu-padding {
 		padding-top: 7px;
 		padding-bottom: 7px;
-		padding-left: 10px;
-		padding-right: 10px;
 	}
 
 	button {

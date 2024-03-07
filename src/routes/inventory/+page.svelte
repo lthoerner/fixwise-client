@@ -25,13 +25,29 @@
 		pad_length: number;
 	};
 
-	type SelectorMap = {
-		[option: string]: SelectorItem;
+	type Selector = {
+		options: NamedItem[];
+		selected: string[];
 	};
 
-	type SelectorItem = {
+	type NamedItem = {
+		true_name: string;
 		display_name: string;
-		selected: boolean;
+	};
+
+	type Filter = {
+		columns: string[];
+		criteria: StringCriteria | NumericCriteria;
+	};
+
+	type StringCriteria = {
+		regex: boolean;
+		value: string;
+	};
+
+	type NumericCriteria = {
+		operator: 'greater_than' | 'less_than' | 'equals';
+		value: number;
 	};
 
 	function parseInventory() {
@@ -130,15 +146,40 @@
 		}
 	}
 
-	function advanceFilterStep() {
-		if (!selectingFilterColumn && !selectingFilterCriteria) {
-			selectingFilterColumn = true;
-		} else if (selectingFilterColumn) {
-			selectingFilterColumn = false;
-			selectingFilterCriteria = true;
-		} else if (selectingFilterCriteria) {
-			selectingFilterCriteria = false;
+	function applyFilter() {
+		let criteria: StringCriteria | NumericCriteria;
+		if (allFilterColumnsNumeric) {
+			criteria = {
+				operator: numericOperators.selected[0] as 'greater_than' | 'less_than' | 'equals',
+				value: parseFloat(filterQuery)
+			};
+		} else {
+			criteria = {
+				regex: useRegex,
+				value: filterQuery
+			};
 		}
+
+		filters = [...filters, { columns: selectedFilterColumns.selected, criteria }];
+
+		filterQuery = '';
+		filterStep = null;
+		selectedFilterColumns.selected = [];
+		useRegex = false;
+		numericOperators.selected = ['equals'];
+	}
+
+	function allColumnsNumeric(selectedColumns: Selector) {
+		const numericTypes = ['decimal', 'int'];
+		for (const column_name of selectedColumns.selected) {
+			// Throw error here?
+			const column = columns.get(column_name);
+			if (column && !numericTypes.includes(column.data_type)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	const columns: Map<string, ColumnSchema> = new Map();
@@ -148,28 +189,58 @@
 
 	const inventory: any[] = parseInventory();
 
-	let searchQuery = '';
 	let selectedSortColumn = columns.keys().next().value;
 	let ascendingSort = true;
 
 	let recordsPerPage = 10;
 	let page = 1;
 
-	let selectingFilterColumn = false;
-	let selectingFilterCriteria = false;
-	let selectedFilterColumns: SelectorMap = {};
-	columns.forEach(
-		(metadata, column) =>
-			(selectedFilterColumns[column] = { display_name: metadata.display_name, selected: false })
-	);
+	let searchQuery = '';
+	let filterQuery = '';
+
+	let filters: Filter[] = [];
+
+	let filterStep: null | 'column' | 'criteria' = null;
+	let selectedFilterColumns: Selector = {
+		options: [],
+		selected: []
+	};
+
+	for (const [column_name, column_metadata] of columns.entries()) {
+		selectedFilterColumns.options.push({
+			true_name: column_name,
+			display_name: column_metadata.display_name
+		});
+	}
+
+	let lookupType: Selector = {
+		options: [
+			{ true_name: 'search', display_name: 'Search' },
+			{ true_name: 'filter', display_name: 'Filter' }
+		],
+		selected: ['search']
+	};
+
+	let numericOperators: Selector = {
+		options: [
+			{ true_name: 'greater_than', display_name: '>' },
+			{ true_name: 'less_than', display_name: '<' },
+			{ true_name: 'equals', display_name: '=' }
+		],
+		selected: ['equals']
+	};
+
+	let useRegex = false;
+
+	$: allFilterColumnsNumeric = allColumnsNumeric(selectedFilterColumns);
 
 	$: page = page < pages ? page : pages;
-	$: page = page > 0 ? page : 1;
+	$: realPage = page > 0 ? page : 1;
 	$: pages = Math.ceil(searchedInventory.length / recordsPerPage);
 
 	$: windowedInventory = searchedInventory.slice(
-		(page - 1) * recordsPerPage,
-		page * recordsPerPage
+		(realPage - 1) * recordsPerPage,
+		realPage * recordsPerPage
 	);
 	$: searchedInventory = inventory
 		.filter((item) => search(item, searchQuery))
@@ -185,19 +256,72 @@
 
 <div class="page-body">
 	<div class="table-menu flex-row">
-		<input
-			class="quick-search menu-padding medium-text gray-outline"
-			bind:value={searchQuery}
-			placeholder="Quick search..."
-		/>
-		<button
-			class="filter menu-padding flex-row medium-text gray-outline"
-			on:click={advanceFilterStep}
-		>
-			<span>Filter</span>
-		</button>
-		<SelectorBox bind:options={selectedFilterColumns} />
-		<input class="menu-padding medium-text gray-outline" class:hidden={!selectingFilterCriteria} />
+		<SelectorBox bind:selector={lookupType} exclusive={true} required={true} />
+		{#if lookupType.selected.includes('search')}
+			<input
+				class="quick-search menu-padding medium-text gray-outline"
+				bind:value={searchQuery}
+				placeholder="Quick search..."
+			/>
+		{/if}
+		{#if lookupType.selected.includes('filter')}
+			{#if filterStep == null}
+				<button
+					class="menu-button menu-padding flex-row medium-text gray-outline"
+					on:click={() => (filterStep = 'column')}
+				>
+					<span>Add Filter</span>
+				</button>
+			{/if}
+			{#if filterStep == 'column'}
+				<SelectorBox bind:selector={selectedFilterColumns} />
+				<button
+					class="menu-button menu-padding medium-text gray-outline"
+					on:click={() => (filterStep = 'criteria')}
+				>
+					<span>Done</span>
+				</button>
+			{/if}
+			{#if filterStep == 'criteria'}
+				{#if allFilterColumnsNumeric}
+					<SelectorBox
+						bind:selector={numericOperators}
+						exclusive={true}
+						required={true}
+						horizontalPadding={18}
+					/>
+					<input
+						class="menu-padding medium-text gray-outline"
+						bind:value={filterQuery}
+						placeholder="Type a number..."
+					/>
+				{:else}
+					<button
+						class="menu-button menu-padding medium-text gray-outline"
+						class:selected={useRegex}
+						on:click={() => (useRegex = !useRegex)}
+					>
+						<img src="/regex.svg" alt="Use regex" />
+					</button>
+					<input
+						class="menu-padding medium-text gray-outline"
+						bind:value={filterQuery}
+						placeholder="Type a query..."
+					/>
+				{/if}
+				<button class="menu-button menu-padding medium-text gray-outline" on:click={applyFilter}>
+					<span>Apply</span>
+				</button>
+				<div class="icon-pair flex-row medium-text">
+					<img src="/columns.svg" alt="Columns Selected:" />
+					<span>{selectedFilterColumns.selected.length}</span>
+				</div>
+			{/if}
+			<div class="icon-pair flex-row medium-text">
+				<img src="/filter.svg" alt="Active Filters:" />
+				<span>{filters.length}</span>
+			</div>
+		{/if}
 		<div class="menu-right flex-row">
 			<div class="records-per-page flex-row">
 				<div class="menu-padding"><span>Records per page:</span></div>
@@ -210,14 +334,16 @@
 			<div class="page-number flex-row">
 				<div class="menu-padding"><span>Page:</span></div>
 				<input class="menu-padding medium-text gray-outline" type="number" bind:value={page} />
-				<div class="menu-padding"><span>of <strong>{pages}</strong></span></div>
+				<div class="menu-padding">
+					<span>of <strong>{recordsPerPage > 0 ? pages : '?'}</strong></span>
+				</div>
 			</div>
 			<div class="page-navigation flex-row">
 				<button on:click={() => turnPage(false)}>
-					<img src="/page_navigator_previous.svg" alt="Next page" />
+					<img src="/page_navigator_previous.svg" alt="Navigate to next page" />
 				</button>
 				<button on:click={() => turnPage(true)}>
-					<img src="/page_navigator_next.svg" alt="Previous page" />
+					<img src="/page_navigator_next.svg" alt="Navigate to previous page" />
 				</button>
 			</div>
 		</div>
@@ -285,10 +411,6 @@
 		&:focus {
 			outline: none;
 		}
-	}
-
-	.hidden {
-		display: none !important;
 	}
 
 	.flex-row {
@@ -369,6 +491,20 @@
 			padding-right: 10px;
 		}
 
+		.menu-button {
+			transition: 0.23s ease-out;
+
+			&:hover,
+			&.selected {
+				background-color: gray;
+				transition: 0.23s ease-out;
+			}
+
+			img {
+				height: 13px;
+			}
+		}
+
 		.records-per-page,
 		.page-number {
 			input {
@@ -381,12 +517,11 @@
 			max-width: 250px;
 		}
 
-		.filter {
-			transition: 0.23s ease-out;
+		.icon-pair {
+			gap: 7px;
 
-			&:hover {
-				background-color: gray;
-				transition: 0.23s ease-out;
+			img {
+				height: 1.1em;
 			}
 		}
 
