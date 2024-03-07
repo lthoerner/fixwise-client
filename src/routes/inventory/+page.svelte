@@ -43,11 +43,13 @@
 	type StringCriteria = {
 		regex: boolean;
 		value: string;
+		type: 'string_criteria';
 	};
 
 	type NumericCriteria = {
 		operator: 'greater_than' | 'less_than' | 'equals';
 		value: number;
+		type: 'numeric_criteria';
 	};
 
 	function parseInventory() {
@@ -102,6 +104,49 @@
 		return item;
 	}
 
+	function filter(item: any, filters: Filter[]) {
+		for (const filter of filters) {
+			const criteria = filter.criteria;
+
+			for (const column of filter.columns) {
+				const columnValue = item[column];
+
+				if (criteria.type == 'string_criteria') {
+					if (criteria.regex) {
+						const regex = new RegExp(criteria.value, 'i');
+						if (!regex.test(columnValue)) {
+							return;
+						}
+					} else {
+						if (!columnValue.includes(criteria.value)) {
+							return;
+						}
+					}
+				} else if (criteria.type == 'numeric_criteria') {
+					switch (criteria.operator) {
+						case 'greater_than':
+							if (!(columnValue > criteria.value)) {
+								return;
+							}
+							break;
+						case 'less_than':
+							if (!(columnValue < criteria.value)) {
+								return;
+							}
+							break;
+						case 'equals':
+							if (columnValue !== criteria.value) {
+								return;
+							}
+							break;
+					}
+				}
+			}
+		}
+
+		return item;
+	}
+
 	function compare(a: any, b: any, selectedSortColumn: string, ascendingSort: boolean) {
 		const nameA = a[selectedSortColumn];
 		const nameB = b[selectedSortColumn];
@@ -151,12 +196,14 @@
 		if (allFilterColumnsNumeric) {
 			criteria = {
 				operator: numericOperators.selected[0] as 'greater_than' | 'less_than' | 'equals',
-				value: parseFloat(filterQuery)
+				value: parseFloat(filterQuery),
+				type: 'numeric_criteria'
 			};
 		} else {
 			criteria = {
 				regex: useRegex,
-				value: filterQuery
+				value: filterQuery,
+				type: 'string_criteria'
 			};
 		}
 
@@ -243,7 +290,13 @@
 		realPage * recordsPerPage
 	);
 	$: searchedInventory = inventory
-		.filter((item) => search(item, searchQuery))
+		.filter((item) => {
+			if (lookupType.selected.includes('search')) {
+				return search(item, searchQuery);
+			} else if (lookupType.selected.includes('filter')) {
+				return filter(item, filters);
+			}
+		})
 		.sort((a, b) => compare(a, b, selectedSortColumn, ascendingSort))
 		.map(format);
 </script>
