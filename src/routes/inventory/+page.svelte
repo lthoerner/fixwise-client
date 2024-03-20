@@ -5,16 +5,14 @@
 	export let data;
 
 	type ColumnSchemaRecord = {
-		true_name: string;
+		name: string;
 		display_name: string;
-		search_weight: number;
 		data_type: string;
 		formatting: ColumnFormatting;
 	};
 
 	type ColumnSchema = {
 		display_name: string;
-		search_weight: number;
 		data_type: string;
 		formatting: ColumnFormatting;
 	};
@@ -109,7 +107,7 @@
 			const criteria = filter.criteria;
 
 			for (const column of filter.columns) {
-				const columnValue = item[column];
+				const columnValue = item[column].toString();
 
 				if (criteria.type == 'string_criteria') {
 					if (criteria.regex) {
@@ -207,17 +205,17 @@
 			};
 		}
 
-		filters = [...filters, { columns: selectedFilterColumns.selected, criteria }];
+		filters = [...filters, { columns: filterColumns.selected, criteria }];
 
 		filterQuery = '';
 		filterStep = null;
-		selectedFilterColumns.selected = [];
+		filterColumns.selected = [];
 		useRegex = false;
 		numericOperators.selected = ['equals'];
 	}
 
 	function allColumnsNumeric(selectedColumns: Selector) {
-		const numericTypes = ['decimal', 'int'];
+		const numericTypes = ['decimal', 'integer'];
 		for (const column_name of selectedColumns.selected) {
 			// Throw error here?
 			const column = columns.get(column_name);
@@ -231,7 +229,7 @@
 
 	const columns: Map<string, ColumnSchema> = new Map();
 	for (const column of data.inventorySchema as ColumnSchemaRecord[]) {
-		columns.set(column.true_name, column as ColumnSchema);
+		columns.set(column.name, column as ColumnSchema);
 	}
 
 	const inventory: any[] = parseInventory();
@@ -248,13 +246,13 @@
 	let filters: Filter[] = [];
 
 	let filterStep: null | 'column' | 'criteria' = null;
-	let selectedFilterColumns: Selector = {
+	let filterColumns: Selector = {
 		options: [],
 		selected: []
 	};
 
 	for (const [column_name, column_metadata] of columns.entries()) {
-		selectedFilterColumns.options.push({
+		filterColumns.options.push({
 			true_name: column_name,
 			display_name: column_metadata.display_name
 		});
@@ -279,7 +277,7 @@
 
 	let useRegex = false;
 
-	$: allFilterColumnsNumeric = allColumnsNumeric(selectedFilterColumns);
+	$: allFilterColumnsNumeric = allColumnsNumeric(filterColumns);
 
 	$: page = page = page == 0 ? null : page;
 	$: if (page) {
@@ -330,10 +328,10 @@
 				</button>
 			{/if}
 			{#if filterStep == 'column'}
-				<SelectorBox bind:selector={selectedFilterColumns} />
+				<SelectorBox bind:selector={filterColumns} />
 				<button
 					class="menu-button menu-padding medium-text gray-outline"
-					on:click={() => (filterStep = 'criteria')}
+					on:click={() => (filterColumns.selected.length > 0 ? (filterStep = 'criteria') : false)}
 				>
 					<span>Done</span>
 				</button>
@@ -365,12 +363,17 @@
 						placeholder="Type a query..."
 					/>
 				{/if}
-				<button class="menu-button menu-padding medium-text gray-outline" on:click={applyFilter}>
+				<button
+					class="menu-button menu-padding medium-text gray-outline"
+					on:click={() => {
+						if (filterQuery != '') applyFilter();
+					}}
+				>
 					<span>Apply</span>
 				</button>
 				<div class="icon-pair flex-row medium-text">
 					<img src="/columns.svg" alt="Columns Selected:" />
-					<span>{selectedFilterColumns.selected.length}</span>
+					<span>{filterColumns.selected.length}</span>
 				</div>
 			{/if}
 			<div class="icon-pair flex-row medium-text">
