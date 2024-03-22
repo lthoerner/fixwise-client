@@ -279,7 +279,7 @@
 
 	$: allFilterColumnsNumeric = allColumnsNumeric(filterColumns);
 
-	$: page = page = page == 0 ? null : page;
+	$: page = page == 0 ? null : page;
 	$: if (page) {
 		page = page < pages ? page : pages;
 	}
@@ -313,7 +313,7 @@
 		<SelectorBox bind:selector={lookupType} exclusive={true} required={true} />
 		{#if lookupType.selected.includes('search')}
 			<input
-				class="quick-search menu-padding medium-text gray-outline"
+				class="quick-search menu-padding medium-text gray-outline rounded-corners"
 				bind:value={searchQuery}
 				placeholder="Quick search..."
 			/>
@@ -321,7 +321,7 @@
 		{#if lookupType.selected.includes('filter')}
 			{#if filterStep == null}
 				<button
-					class="menu-button menu-padding flex-row medium-text gray-outline"
+					class="menu-button menu-padding flex-row medium-text gray-outline rounded-corners"
 					on:click={() => (filterStep = 'column')}
 				>
 					<span>Add Filter</span>
@@ -330,7 +330,7 @@
 			{#if filterStep == 'column'}
 				<SelectorBox bind:selector={filterColumns} />
 				<button
-					class="menu-button menu-padding medium-text gray-outline"
+					class="menu-button menu-padding medium-text gray-outline rounded-corners"
 					on:click={() => (filterColumns.selected.length > 0 ? (filterStep = 'criteria') : false)}
 				>
 					<span>Done</span>
@@ -345,26 +345,30 @@
 						horizontalPadding={18}
 					/>
 					<input
-						class="menu-padding medium-text gray-outline"
+						class="menu-padding medium-text gray-outline rounded-corners"
 						bind:value={filterQuery}
 						placeholder="Type a number..."
 					/>
 				{:else}
-					<button
-						class="menu-button menu-padding medium-text gray-outline"
-						class:selected={useRegex}
-						on:click={() => (useRegex = !useRegex)}
-					>
-						<img src="/regex.svg" alt="Use regex" />
-					</button>
-					<input
-						class="menu-padding medium-text gray-outline"
-						bind:value={filterQuery}
-						placeholder="Type a query..."
-					/>
+					<div class="flex-row justify-end">
+						<button
+							id="regex-button"
+							class="absolute rounded-corners"
+							class:selected={useRegex}
+							on:click={() => (useRegex = !useRegex)}
+						>
+							<img src="/regex.svg" alt="Use regex" />
+						</button>
+						<input
+							class="menu-padding medium-text gray-outline rounded-corners"
+							style="padding-right: 2em;"
+							bind:value={filterQuery}
+							placeholder="Type a query..."
+						/>
+					</div>
 				{/if}
 				<button
-					class="menu-button menu-padding medium-text gray-outline"
+					class="menu-button menu-padding medium-text gray-outline rounded-corners"
 					on:click={() => {
 						if (filterQuery != '') applyFilter();
 					}}
@@ -386,14 +390,18 @@
 				<div class="records-per-page flex-row">
 					<div class="menu-padding"><span>Records per page:</span></div>
 					<input
-						class="menu-padding medium-text gray-outline"
+						class="menu-padding medium-text gray-outline rounded-corners"
 						type="number"
 						bind:value={recordsPerPage}
 					/>
 				</div>
 				<div class="page-number flex-row">
 					<div class="menu-padding"><span>Page:</span></div>
-					<input class="menu-padding medium-text gray-outline" type="number" bind:value={page} />
+					<input
+						class="menu-padding medium-text gray-outline rounded-corners"
+						type="number"
+						bind:value={page}
+					/>
 					<div class="menu-padding">
 						<span>of <strong>{recordsPerPage > 0 ? pages : '?'}</strong></span>
 					</div>
@@ -416,7 +424,7 @@
 		{/if}
 	</div>
 
-	<div class="table gray-outline">
+	<div class="table gray-outline rounded-corners">
 		<div class="column-header">
 			{#each columns as [column_name, column_metadata]}
 				<ColumnTitle
@@ -484,12 +492,36 @@
 		}
 	}
 
+	.absolute {
+		position: absolute;
+	}
+
 	.flex-row {
 		display: flex;
 		flex-direction: row;
 		flex-wrap: nowrap;
 		align-items: center;
 		overflow: hidden;
+	}
+
+	.flex-column {
+		display: flex;
+		flex-direction: column;
+		flex-wrap: nowrap;
+		align-items: center;
+		overflow: hidden;
+	}
+
+	.justify-start {
+		justify-content: flex-start;
+	}
+
+	.justify-center {
+		justify-content: center;
+	}
+
+	.justify-end {
+		justify-content: flex-end;
 	}
 
 	.title-text {
@@ -505,11 +537,14 @@
 		font-size: 16px;
 	}
 
+	.rounded-corners {
+		border-radius: 0.6em;
+	}
+
 	.gray-outline {
 		border-style: solid;
 		border-width: 2px;
 		border-color: gray;
-		border-radius: 0.6em;
 	}
 
 	.gray-outline-top {
@@ -563,6 +598,26 @@
 		}
 
 		.menu-button {
+			transition: 0.23s ease-out;
+
+			&:hover,
+			&.selected {
+				background-color: gray;
+				transition: 0.23s ease-out;
+			}
+
+			img {
+				height: 13px;
+			}
+		}
+
+		#regex-button {
+			padding-top: 4px;
+			padding-bottom: 4px;
+			padding-left: 5px;
+			padding-right: 5px;
+			margin-right: 6px;
+
 			transition: 0.23s ease-out;
 
 			&:hover,
