@@ -175,16 +175,16 @@
 
 	function turnPage(next: boolean) {
 		if (next) {
-			if (page && page < pages) {
-				page++;
+			if (inputPage && inputPage < totalPages) {
+				inputPage++;
 			} else {
-				page = 1;
+				inputPage = 1;
 			}
 		} else {
-			if (page && page > 1) {
-				page--;
+			if (inputPage && inputPage > 1) {
+				inputPage--;
 			} else {
-				page = pages;
+				inputPage = totalPages;
 			}
 		}
 	}
@@ -238,7 +238,7 @@
 	let ascendingSort = true;
 
 	let recordsPerPage = 10;
-	let page: number | null = 1;
+	let inputPage: number | null = 1;
 
 	let searchQuery = '';
 	let filterQuery = '';
@@ -279,12 +279,15 @@
 
 	$: allFilterColumnsNumeric = allColumnsNumeric(filterColumns);
 
-	$: page = page == 0 ? null : page;
-	$: if (page) {
-		page = page < pages ? page : pages;
+	$: if (inputPage != null && inputPage > totalPages) {
+		inputPage = totalPages;
 	}
-	$: realPage = page && page > 0 ? page : 1;
-	$: pages = Math.ceil(searchedInventory.length / recordsPerPage);
+	$: if (inputPage == 0) {
+		inputPage = null;
+		console.log('Nullified input page');
+	}
+	$: realPage = inputPage && inputPage > 0 ? inputPage : 1;
+	$: totalPages = Math.ceil(searchedInventory.length / recordsPerPage);
 
 	$: windowedInventory = searchedInventory.slice(
 		(realPage - 1) * recordsPerPage,
@@ -400,10 +403,10 @@
 					<input
 						class="menu-padding medium-text gray-outline rounded-corners"
 						type="number"
-						bind:value={page}
+						bind:value={inputPage}
 					/>
 					<div class="menu-padding">
-						<span>of <strong>{recordsPerPage > 0 ? pages : '?'}</strong></span>
+						<span>of <strong>{recordsPerPage > 0 ? totalPages : '?'}</strong></span>
 					</div>
 				</div>
 				<div class="page-navigation flex-row">
