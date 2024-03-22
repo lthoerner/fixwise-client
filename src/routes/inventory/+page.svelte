@@ -316,7 +316,7 @@
 		<SelectorBox bind:selector={lookupType} exclusive={true} required={true} />
 		{#if lookupType.selected.includes('search')}
 			<input
-				class="quick-search menu-padding medium-text gray-outline rounded-corners"
+				class="quick-search menu-padding medium-text gray-outline rounded-corners-standard"
 				bind:value={searchQuery}
 				placeholder="Quick search..."
 			/>
@@ -324,7 +324,7 @@
 		{#if lookupType.selected.includes('filter')}
 			{#if filterStep == null}
 				<button
-					class="menu-button menu-padding flex-row medium-text gray-outline rounded-corners"
+					class="menu-button menu-padding flex-row medium-text gray-outline rounded-corners-standard"
 					on:click={() => (filterStep = 'column')}
 				>
 					<span>Add Filter</span>
@@ -333,7 +333,7 @@
 			{#if filterStep == 'column'}
 				<SelectorBox bind:selector={filterColumns} />
 				<button
-					class="menu-button menu-padding medium-text gray-outline rounded-corners"
+					class="menu-button menu-padding medium-text gray-outline rounded-corners-standard"
 					on:click={() => (filterColumns.selected.length > 0 ? (filterStep = 'criteria') : false)}
 				>
 					<span>Done</span>
@@ -348,7 +348,7 @@
 						horizontalPadding={18}
 					/>
 					<input
-						class="menu-padding medium-text gray-outline rounded-corners"
+						class="menu-padding medium-text gray-outline rounded-corners-standard"
 						bind:value={filterQuery}
 						placeholder="Type a number..."
 					/>
@@ -356,14 +356,14 @@
 					<div class="flex-row justify-end">
 						<button
 							id="regex-button"
-							class="absolute rounded-corners"
+							class="absolute rounded-corners-sharp"
 							class:selected={useRegex}
 							on:click={() => (useRegex = !useRegex)}
 						>
 							<img src="/regex.svg" alt="Use regex" />
 						</button>
 						<input
-							class="menu-padding medium-text gray-outline rounded-corners"
+							class="menu-padding medium-text gray-outline rounded-corners-standard"
 							style="padding-right: 2em;"
 							bind:value={filterQuery}
 							placeholder="Type a query..."
@@ -371,7 +371,7 @@
 					</div>
 				{/if}
 				<button
-					class="menu-button menu-padding medium-text gray-outline rounded-corners"
+					class="menu-button menu-padding medium-text gray-outline rounded-corners-standard"
 					on:click={() => {
 						if (filterQuery != '') applyFilter();
 					}}
@@ -393,7 +393,7 @@
 				<div class="records-per-page flex-row">
 					<div class="menu-padding"><span>Records per page:</span></div>
 					<input
-						class="menu-padding medium-text gray-outline rounded-corners"
+						class="menu-padding medium-text gray-outline rounded-corners-standard"
 						type="number"
 						bind:value={recordsPerPage}
 					/>
@@ -401,7 +401,7 @@
 				<div class="page-number flex-row">
 					<div class="menu-padding"><span>Page:</span></div>
 					<input
-						class="menu-padding medium-text gray-outline rounded-corners"
+						class="menu-padding medium-text gray-outline rounded-corners-standard"
 						type="number"
 						bind:value={inputPage}
 					/>
@@ -427,7 +427,7 @@
 		{/if}
 	</div>
 
-	<div class="table gray-outline rounded-corners">
+	<div class="table gray-outline rounded-corners-standard">
 		<div class="column-header">
 			{#each columns as [column_name, column_metadata]}
 				<ColumnTitle
@@ -540,8 +540,12 @@
 		font-size: 16px;
 	}
 
-	.rounded-corners {
+	.rounded-corners-standard {
 		border-radius: 0.6em;
+	}
+
+	.rounded-corners-sharp {
+		border-radius: 0.3em;
 	}
 
 	.gray-outline {
