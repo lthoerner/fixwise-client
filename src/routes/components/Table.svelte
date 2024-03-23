@@ -65,7 +65,9 @@
 	}
 
 	function format(item: any) {
-		let formattedItem = { ...item };
+		let formattedItem = {
+			...item
+		};
 		for (const [column_name, column_metadata] of columns.entries()) {
 			let value = item[column_name];
 
@@ -205,7 +207,13 @@
 			};
 		}
 
-		filters = [...filters, { columns: filterColumns.selected, criteria }];
+		filters = [
+			...filters,
+			{
+				columns: filterColumns.selected,
+				criteria
+			}
+		];
 
 		filterQuery = '';
 		filterStep = null;
@@ -260,17 +268,32 @@
 
 	let lookupType: Selector = {
 		options: [
-			{ true_name: 'search', display_name: 'Search' },
-			{ true_name: 'filter', display_name: 'Filter' }
+			{
+				true_name: 'search',
+				display_name: 'Search'
+			},
+			{
+				true_name: 'filter',
+				display_name: 'Filter'
+			}
 		],
 		selected: ['search']
 	};
 
 	let numericOperators: Selector = {
 		options: [
-			{ true_name: 'greater_than', display_name: '>' },
-			{ true_name: 'less_than', display_name: '<' },
-			{ true_name: 'equals', display_name: '=' }
+			{
+				true_name: 'greater_than',
+				display_name: '>'
+			},
+			{
+				true_name: 'less_than',
+				display_name: '<'
+			},
+			{
+				true_name: 'equals',
+				display_name: '='
+			}
 		],
 		selected: ['equals']
 	};
@@ -305,145 +328,283 @@
 		.map(format);
 </script>
 
-<div class="page-body">
-	<div class="table-menu flex-row">
-		<SelectorBox bind:selector={lookupType} exclusive={true} required={true} />
-		{#if lookupType.selected.includes('search')}
-			<input
-				class="quick-search menu-padding medium-text gray-outline rounded-corners-standard"
-				bind:value={searchQuery}
-				placeholder="Quick search..."
-			/>
+<div id="table-menu">
+	<SelectorBox bind:selector={lookupType} exclusive={true} required={true} />
+	{#if lookupType.selected.includes('search')}
+		<input id="search" class="menu-input" bind:value={searchQuery} placeholder="Quick search..." />
+	{/if}
+	{#if lookupType.selected.includes('filter')}
+		{#if filterStep == null}
+			<button class="menu-button" on:click={() => (filterStep = 'column')}>
+				<span>Add Filter</span>
+			</button>
 		{/if}
-		{#if lookupType.selected.includes('filter')}
-			{#if filterStep == null}
-				<button
-					class="menu-button menu-padding flex-row medium-text gray-outline rounded-corners-standard"
-					on:click={() => (filterStep = 'column')}
-				>
-					<span>Add Filter</span>
-				</button>
-			{/if}
-			{#if filterStep == 'column'}
-				<SelectorBox bind:selector={filterColumns} />
-				<button
-					class="menu-button menu-padding medium-text gray-outline rounded-corners-standard"
-					on:click={() => (filterColumns.selected.length > 0 ? (filterStep = 'criteria') : false)}
-				>
-					<span>Done</span>
-				</button>
-			{/if}
-			{#if filterStep == 'criteria'}
-				{#if allFilterColumnsNumeric}
-					<SelectorBox
-						bind:selector={numericOperators}
-						exclusive={true}
-						required={true}
-						horizontalPadding={18}
-					/>
-					<input
-						class="menu-padding medium-text gray-outline rounded-corners-standard"
-						bind:value={filterQuery}
-						placeholder="Type a number..."
-					/>
-				{:else}
-					<div class="flex-row justify-end">
-						<button
-							id="regex-button"
-							class="absolute rounded-corners-sharp"
-							class:selected={useRegex}
-							on:click={() => (useRegex = !useRegex)}
-						>
-							<img src="/regex.svg" alt="Use regex" />
-						</button>
-						<input
-							class="menu-padding medium-text gray-outline rounded-corners-standard"
-							style="padding-right: 2em;"
-							bind:value={filterQuery}
-							placeholder="Type a query..."
-						/>
-					</div>
-				{/if}
-				<button
-					class="menu-button menu-padding medium-text gray-outline rounded-corners-standard"
-					on:click={() => {
-						if (filterQuery != '') applyFilter();
-					}}
-				>
-					<span>Apply</span>
-				</button>
-				<div class="icon-pair flex-row medium-text">
-					<img src="/columns.svg" alt="Columns Selected:" />
-					<span>{filterColumns.selected.length}</span>
-				</div>
-			{/if}
-			<div class="icon-pair flex-row medium-text">
-				<img src="/filter.svg" alt="Active Filters:" />
-				<span>{filters.length}</span>
-			</div>
+		{#if filterStep == 'column'}
+			<SelectorBox bind:selector={filterColumns} />
+			<button
+				class="menu-button"
+				on:click={() => (filterColumns.selected.length > 0 ? (filterStep = 'criteria') : false)}
+			>
+				<span>Done</span>
+			</button>
 		{/if}
-		{#if searchedTableData.length > 0}
-			<div class="menu-right flex-row">
-				<div class="records-per-page flex-row">
-					<div class="menu-padding"><span>Records per page:</span></div>
-					<input
-						class="menu-padding medium-text gray-outline rounded-corners-standard"
-						type="number"
-						bind:value={recordsPerPage}
-					/>
-				</div>
-				<div class="page-number flex-row">
-					<div class="menu-padding"><span>Page:</span></div>
-					<input
-						class="menu-padding medium-text gray-outline rounded-corners-standard"
-						type="number"
-						bind:value={inputPage}
-					/>
-					<div class="menu-padding">
-						<span>of <strong>{recordsPerPage > 0 ? totalPages : '?'}</strong></span>
-					</div>
-				</div>
-				<div class="page-navigation flex-row">
-					<button on:click={() => turnPage(false)}>
-						<img src="/page_navigator_previous.svg" alt="Navigate to next page" />
-					</button>
-					<button on:click={() => turnPage(true)}>
-						<img src="/page_navigator_next.svg" alt="Navigate to previous page" />
-					</button>
-				</div>
-			</div>
-		{:else}
-			<div class="menu-right flex-row">
-				<div class="menu-padding">
-					<span><strong>No pages to show</strong></span>
-				</div>
-			</div>
-		{/if}
-	</div>
-
-	<div class="table gray-outline rounded-corners-standard">
-		<div class="column-header">
-			{#each columns as [column_name, column_metadata]}
-				<ColumnTitle
-					trueName={column_name}
-					displayName={column_metadata.display_name}
-					bind:selectedColumn={selectedSortColumn}
-					bind:ascending={ascendingSort}
+		{#if filterStep == 'criteria'}
+			{#if allFilterColumnsNumeric}
+				<SelectorBox
+					bind:selector={numericOperators}
+					exclusive={true}
+					required={true}
+					horizontalPadding={18}
 				/>
-			{/each}
-		</div>
-		<div class="table-body gray-outline-top">
-			{#if searchedTableData.length > 0}
-				{#each windowedTableData as dataItem}
-					<div class="row">
-						{#each columns as [column, _]}
-							<span class="grid-item large-text">{dataItem[column]}</span>
-						{/each}
-					</div>
-				{/each}
+				<input class="menu-input" bind:value={filterQuery} placeholder="Type a number..." />
 			{:else}
-				<div class="placeholder-row flex-row"><span>No items to show</span></div>
+				<div class="flex-row justify-end">
+					<button
+						id="regex-button"
+						class:selected={useRegex}
+						on:click={() => (useRegex = !useRegex)}
+					>
+						<img src="/regex.svg" alt="Use regex" />
+					</button>
+					<input
+						class="menu-input"
+						style="padding-right: 2em;"
+						bind:value={filterQuery}
+						placeholder="Type a query..."
+					/>
+				</div>
 			{/if}
+			<button
+				class="menu-button"
+				on:click={() => {
+					if (filterQuery != '') applyFilter();
+				}}
+			>
+				<span>Apply</span>
+			</button>
+			<div class="icon-pair">
+				<img src="/columns.svg" alt="Columns Selected:" />
+				<span>{filterColumns.selected.length}</span>
+			</div>
+		{/if}
+		<div class="icon-pair">
+			<img src="/filter.svg" alt="Active Filters:" />
+			<span>{filters.length}</span>
 		</div>
+	{/if}
+	{#if searchedTableData.length > 0}
+		<div class="menu-right">
+			<div id="records-per-page">
+				<div class="menu-padding"><span>Records per page:</span></div>
+				<input class="menu-input" type="number" bind:value={recordsPerPage} />
+			</div>
+			<div id="page-number">
+				<div class="menu-padding"><span>Page:</span></div>
+				<input class="menu-input" type="number" bind:value={inputPage} />
+				<div class="menu-padding">
+					<span>of <strong>{recordsPerPage > 0 ? totalPages : '?'}</strong></span>
+				</div>
+			</div>
+			<div id="page-navigation">
+				<button on:click={() => turnPage(false)}>
+					<img src="/page_navigator_previous.svg" alt="Navigate to next page" />
+				</button>
+				<button on:click={() => turnPage(true)}>
+					<img src="/page_navigator_next.svg" alt="Navigate to previous page" />
+				</button>
+			</div>
+		</div>
+	{:else}
+		<div class="menu-right">
+			<div class="menu-padding">
+				<span><strong>No pages to show</strong></span>
+			</div>
+		</div>
+	{/if}
+</div>
+
+<div id="table">
+	<div id="column-titles">
+		{#each columns as [column_name, column_metadata]}
+			<ColumnTitle
+				trueName={column_name}
+				displayName={column_metadata.display_name}
+				bind:selectedColumn={selectedSortColumn}
+				bind:ascending={ascendingSort}
+			/>
+		{/each}
+	</div>
+	<div id="table-body">
+		{#if searchedTableData.length > 0}
+			{#each windowedTableData as dataItem}
+				<div class="row">
+					{#each columns as [column, _]}
+						<span class="grid-item">{dataItem[column]}</span>
+					{/each}
+				</div>
+			{/each}
+		{:else}
+			<div id="placeholder-row"><span>No items to show</span></div>
+		{/if}
 	</div>
 </div>
+
+<style lang="scss">
+	@use '../../styles/utility' as utility;
+
+	#table-menu {
+		@include utility.flex-row;
+		@include utility.gap-standard;
+
+		#regex-button {
+			@include utility.absolute;
+			@include utility.rounded-corners-sharp;
+			@include utility.transition-standard;
+
+			padding-top: 4px;
+			padding-bottom: 4px;
+			padding-left: 5px;
+			padding-right: 5px;
+			margin-right: 6px;
+
+			&:hover,
+			&.selected {
+				background-color: gray;
+			}
+
+			img {
+				height: 13px;
+			}
+		}
+
+		#records-per-page,
+		#page-number {
+			@include utility.flex-row;
+
+			input {
+				width: 2em;
+			}
+		}
+
+		#search {
+			flex-grow: 2;
+			max-width: 250px;
+		}
+
+		#page-navigation {
+			@include utility.flex-row;
+			@include utility.gap-standard;
+
+			img {
+				@include utility.transition-standard;
+
+				opacity: 0.5;
+
+				&:hover {
+					opacity: 1;
+				}
+			}
+		}
+
+		.menu-right {
+			@include utility.flex-row;
+			@include utility.gap-small;
+
+			margin-left: auto;
+		}
+
+		.menu-padding {
+			padding-top: 7px;
+			padding-bottom: 7px;
+			padding-left: 10px;
+			padding-right: 10px;
+		}
+
+		.menu-button {
+			@include utility.gray-outline;
+			@include utility.rounded-corners-standard;
+			@include utility.medium-text;
+			@include utility.transition-standard;
+			@extend .menu-padding;
+
+			&:hover {
+				background-color: gray;
+			}
+		}
+
+		.menu-input {
+			@include utility.gray-outline;
+			@include utility.rounded-corners-standard;
+			@include utility.medium-text;
+			@extend .menu-padding;
+		}
+
+		.icon-pair {
+			@include utility.flex-row;
+			@include utility.gap-small;
+			@include utility.medium-text;
+
+			img {
+				height: 1.1em;
+			}
+		}
+	}
+
+	#table {
+		@include utility.gray-outline;
+		@include utility.rounded-corners-standard;
+
+		display: grid;
+		margin-top: 15px;
+		padding: 15px;
+
+		#column-titles {
+			@include utility.grid-row-auto;
+
+			padding-left: 15px;
+			padding-right: 15px;
+			margin-top: 12px;
+			margin-bottom: 17px;
+		}
+
+		#table-body {
+			@include utility.gray-outline-top;
+
+			padding-top: 10px;
+		}
+
+		.grid-item {
+			@include utility.large-text;
+
+			padding-left: 3px;
+		}
+
+		.row {
+			@include utility.grid-row-auto;
+			@include utility.rounded-corners-standard;
+			@include utility.transition-slow;
+
+			padding-left: 15px;
+			padding-right: 15px;
+			padding-top: 10px;
+			padding-bottom: 10px;
+
+			&:hover {
+				transform: translateY(-2px);
+				font-size: 20px;
+				padding-left: 12px;
+				background-color: rgba(255, 255, 255, 0.05);
+			}
+		}
+
+		#placeholder-row {
+			@include utility.flex-row;
+			@include utility.justify-center;
+
+			font-size: 20px;
+			padding-top: 20px;
+			padding-bottom: 14px;
+			padding-left: 15px;
+		}
+	}
+</style>

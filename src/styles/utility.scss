@@ -1,228 +1,85 @@
-.absolute {
+@mixin absolute {
     position: absolute;
 }
 
-.flex-row {
+@mixin grid-row-auto {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+}
+
+@mixin flex {
     display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    overflow: hidden;
+}
+
+@mixin flex-row {
+    @include flex;
     flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: center;
-    overflow: hidden;
 }
 
-.flex-column {
-    display: flex;
+@mixin flex-column {
+    @include flex;
     flex-direction: column;
-    flex-wrap: nowrap;
-    align-items: center;
-    overflow: hidden;
 }
 
-.justify-start {
+@mixin justify-start {
     justify-content: flex-start;
 }
 
-.justify-center {
+@mixin justify-center {
     justify-content: center;
 }
 
-.justify-end {
+@mixin justify-end {
     justify-content: flex-end;
 }
 
-.title-text {
+@mixin gap-small {
+    gap: 7px;
+}
+
+@mixin gap-standard {
+    gap: 15px;
+}
+
+@mixin transition-slow {
+    transition: 0.3s ease-out;
+}
+
+@mixin transition-standard {
+    transition: 0.23s ease-out;
+}
+
+@mixin title-text {
     font-size: 36px;
     font-weight: bold;
 }
 
-.large-text {
+@mixin large-text {
     font-size: 18px;
 }
 
-.medium-text {
+@mixin medium-text {
     font-size: 16px;
 }
 
-.rounded-corners-standard {
+@mixin rounded-corners-standard {
     border-radius: 0.6em;
 }
 
-.rounded-corners-sharp {
+@mixin rounded-corners-sharp {
     border-radius: 0.3em;
 }
 
-.gray-outline {
-    border-style: solid;
-    border-width: 2px;
-    border-color: gray;
+@mixin gray-outline {
+    border: 2px solid gray;
 }
 
-.gray-outline-top {
-    border-top-style: solid;
-    border-top-width: 2px;
-    border-top-color: gray;
-}
-
-.menu {
-    background-color: purple;
-
-    a {
-        padding-top: 3px;
-        padding-bottom: 3px;
-        padding-left: 25px;
-        padding-right: 25px;
-        text-decoration: none;
-        margin-top: 15px;
-        margin-bottom: 10px;
-        color: black;
-        transition: 0.2s ease-out;
-
-        &:hover {
-            border-top-left-radius: 17px;
-            border-top-right-radius: 17px;
-            background-color: cyan;
-            transition: 0.2s ease-out;
-        }
-    }
-}
-
-.page-body {
-    margin-right: 25px;
-    margin-left: 25px;
-    padding-top: 25px;
-}
-
-.table-menu {
-    gap: 15px;
-
-    .menu-right {
-        margin-left: auto;
-        gap: 7px;
-    }
-
-    .menu-padding {
-        padding-top: 7px;
-        padding-bottom: 7px;
-        padding-left: 10px;
-        padding-right: 10px;
-    }
-
-    .menu-button {
-        transition: 0.23s ease-out;
-
-        &:hover,
-        &.selected {
-            background-color: gray;
-            transition: 0.23s ease-out;
-        }
-
-        img {
-            height: 13px;
-        }
-    }
-
-    #regex-button {
-        padding-top: 4px;
-        padding-bottom: 4px;
-        padding-left: 5px;
-        padding-right: 5px;
-        margin-right: 6px;
-
-        transition: 0.23s ease-out;
-
-        &:hover,
-        &.selected {
-            background-color: gray;
-            transition: 0.23s ease-out;
-        }
-
-        img {
-            height: 13px;
-        }
-    }
-
-    .records-per-page,
-    .page-number {
-        input {
-            width: 2em;
-        }
-    }
-
-    .quick-search {
-        flex-grow: 2;
-        max-width: 250px;
-    }
-
-    .icon-pair {
-        gap: 7px;
-
-        img {
-            height: 1.1em;
-        }
-    }
-
-    .page-navigation {
-        gap: 15px;
-
-        img {
-            opacity: 0.5;
-            transition: 0.23s ease-out;
-
-            &:hover {
-                opacity: 1;
-                transition: 0.23s ease-out;
-            }
-        }
-    }
-}
-
-.table {
-    display: grid;
-    margin-top: 15px;
-    padding: 15px;
-
-    .grid-item {
-        padding-left: 3px;
-    }
-
-    .column-header {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-        padding-left: 15px;
-        padding-right: 15px;
-        margin-top: 12px;
-        margin-bottom: 17px;
-    }
-
-    .table-body {
-        padding-top: 10px;
-    }
-
-    .row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-        padding-left: 15px;
-        padding-right: 15px;
-        padding-top: 10px;
-        padding-bottom: 10px;
-        transition: 0.3s ease-out;
-        border-radius: 0.6em;
-
-        &:hover {
-            transform: translateY(-2px);
-            font-size: 20px;
-            padding-left: 12px;
-            background-color: rgba(255, 255, 255, 0.05);
-            transition: 0.3s ease-out;
-        }
-    }
-
-    .placeholder-row {
-        font-size: 20px;
-        justify-content: center;
-        align-items: center;
-        padding-top: 20px;
-        padding-bottom: 14px;
-        padding-left: 15px;
-    }
+@mixin gray-outline-top {
+    @include gray-outline;
+    border-bottom-style: none;
+    border-left-style: none;
+    border-right-style: none;
 }
