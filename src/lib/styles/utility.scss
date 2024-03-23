@@ -36,6 +36,10 @@
     justify-content: flex-end;
 }
 
+@mixin gap-tiny {
+    gap: 3px;
+}
+
 @mixin gap-small {
     gap: 7px;
 }

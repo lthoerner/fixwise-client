@@ -34,22 +34,21 @@
 </button>
 
 <style lang="scss">
+	@use '$styles/utility' as utility;
+
 	button {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
+		@include utility.flex-row;
+		@include utility.transition-slow;
+
 		padding: 0;
 		background-color: transparent;
 		border: none;
-		transition: 0.3s ease-out;
 
 		&:hover {
 			transform: translateX(-2px) translateY(-2px);
-			transition: 0.3s ease-out;
 
 			img {
 				opacity: 0.17;
-				transition: 0.3s ease-out;
 			}
 		}
 	}
@@ -61,25 +60,23 @@
 	}
 
 	div {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 3px;
+		@include utility.flex-column;
+		@include utility.gap-tiny;
+
 		padding-left: 7px;
 
 		img {
+			@include utility.transition-slow;
+
 			opacity: 0;
-			transition: 0.3s ease-out;
 		}
 
 		img.active {
 			opacity: 0.8;
-			transition: 0.3s ease-out;
 		}
 
 		img.inactive {
 			opacity: 0.3;
-			transition: 0.3s ease-out;
 		}
 	}
 </style>
