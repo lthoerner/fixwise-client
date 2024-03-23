@@ -1,0 +1,39 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: black;
+}
+
+a,
+span,
+input,
+button {
+    font-family: 'Helvetica', sans-serif;
+    color: white;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+button {
+    background-color: transparent;
+    padding: 0;
+    border: none;
+}
+
+input {
+    background-color: transparent;
+    text-align: left;
+
+    &:focus {
+        outline: none;
+    }
+}
