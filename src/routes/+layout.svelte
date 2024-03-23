@@ -1,6 +1,6 @@
 <script>
-	import '../styles/global.scss';
-	import '../styles/utility.scss';
+	import '$styles/global.scss';
+	import '$styles/utility.scss';
 </script>
 
 <slot />

@@ -358,7 +358,7 @@
 				/>
 				<input class="menu-input" bind:value={filterQuery} placeholder="Type a number..." />
 			{:else}
-				<div class="flex-row justify-end">
+				<div id="filter-query">
 					<button
 						id="regex-button"
 						class:selected={useRegex}
@@ -450,7 +450,7 @@
 </div>
 
 <style lang="scss">
-	@use '../../styles/utility' as utility;
+	@use '$styles/utility' as utility;
 
 	#table-menu {
 		@include utility.flex-row;
@@ -489,6 +489,11 @@
 		#search {
 			flex-grow: 2;
 			max-width: 250px;
+		}
+
+		#filter-query {
+			@include utility.flex-row;
+			@include utility.justify-end;
 		}
 
 		#page-navigation {

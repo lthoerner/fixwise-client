@@ -33,10 +33,10 @@
 	export let horizontalPadding: number = 10;
 </script>
 
-<div class="flex-row gray-outline">
+<div id="wrapper">
 	{#each selector.options as option}
 		<button
-			class="menu-padding medium-text"
+			class="selector-button"
 			style="padding-left: {horizontalPadding}px; padding-right: {horizontalPadding}px;"
 			class:selected={isSelected(option.true_name)}
 			on:click={() => select(option.true_name)}
@@ -47,46 +47,35 @@
 </div>
 
 <style lang="scss">
-	.flex-row {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: nowrap;
-		align-items: center;
-		overflow: hidden;
+	@use '$styles/utility' as utility;
+
+	#wrapper {
+		@include utility.flex-row;
+		@include utility.gray-outline;
+		@include utility.rounded-corners-standard;
 	}
 
-	.medium-text {
-		font-size: 16px;
-	}
+	.selector-button {
+		@include utility.medium-text;
 
-	.gray-outline {
-		border-style: solid;
-		border-width: 2px;
-		border-color: gray;
-		border-radius: 0.6em;
-	}
-
-	.menu-padding {
 		padding-top: 7px;
 		padding-bottom: 7px;
 	}
 
 	button {
-		font-family: 'Helvetica', sans-serif;
+		@include utility.transition-standard;
+
 		background-color: transparent;
 		border: none;
 		padding: 0;
 		color: white;
-		transition: 0.23s ease-out;
 
 		&:hover {
 			background-color: rgba(255, 255, 255, 0.25);
-			transition: 0.23s ease-out;
 		}
 
 		&.selected {
 			background-color: gray;
-			transition: 0.23s ease-out;
 		}
 	}
 </style>

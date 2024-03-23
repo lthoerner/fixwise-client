@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Table from '../components/Table.svelte';
+	import Table from '$components/table/Table.svelte';
 	export let data;
 </script>
 
@@ -14,7 +14,7 @@
 </div>
 
 <style lang="scss">
-	@use '../../styles/utility' as utility;
+	@use '$styles/utility' as utility;
 
 	#menu {
 		@include utility.flex-row;
