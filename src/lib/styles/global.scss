@@ -1,15 +1,26 @@
+$text-color: white;
+$background-color: black;
+$primary-color: gray;
+
 body {
     margin: 0;
     padding: 0;
-    background-color: black;
+    background-color: $background-color;
 }
 
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
 a,
 span,
 input,
 button {
     font-family: 'Helvetica', sans-serif;
-    color: white;
+    color: $text-color;
 }
 
 input::-webkit-outer-spin-button,
