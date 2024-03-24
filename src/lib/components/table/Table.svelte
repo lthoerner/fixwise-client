@@ -71,7 +71,7 @@
 		for (const [column_name, column_metadata] of columns.entries()) {
 			let value = item[column_name];
 
-			if (column_metadata.data_type == 'decimal') {
+			if (column_metadata.data_type === 'decimal') {
 				value = new Decimal(value).toFixed(2).toString();
 			}
 
@@ -111,7 +111,7 @@
 			for (const column of filter.columns) {
 				const columnValue = item[column].toString();
 
-				if (criteria.type == 'string_criteria') {
+				if (criteria.type === 'string_criteria') {
 					if (criteria.regex) {
 						const regex = new RegExp(criteria.value, 'i');
 						if (!regex.test(columnValue)) {
@@ -122,7 +122,7 @@
 							return;
 						}
 					}
-				} else if (criteria.type == 'numeric_criteria') {
+				} else if (criteria.type === 'numeric_criteria') {
 					switch (criteria.operator) {
 						case 'greater_than':
 							if (!(columnValue > criteria.value)) {
@@ -305,7 +305,7 @@
 	$: if (inputPage != null && inputPage > totalPages) {
 		inputPage = totalPages;
 	}
-	$: if (inputPage == 0) {
+	$: if (inputPage === 0) {
 		inputPage = null;
 		console.log('Nullified input page');
 	}
@@ -334,12 +334,12 @@
 		<input id="search" class="menu-input" bind:value={searchQuery} placeholder="Quick search..." />
 	{/if}
 	{#if lookupType.selected.includes('filter')}
-		{#if filterStep == null}
+		{#if filterStep === null}
 			<button class="menu-button" on:click={() => (filterStep = 'column')}>
 				<span>Add Filter</span>
 			</button>
 		{/if}
-		{#if filterStep == 'column'}
+		{#if filterStep === 'column'}
 			<SelectorBox bind:selector={filterColumns} />
 			<button
 				class="menu-button"
@@ -348,7 +348,7 @@
 				<span>Done</span>
 			</button>
 		{/if}
-		{#if filterStep == 'criteria'}
+		{#if filterStep === 'criteria'}
 			{#if allFilterColumnsNumeric}
 				<SelectorBox
 					bind:selector={numericOperators}
