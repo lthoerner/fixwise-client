@@ -457,6 +457,7 @@
 </div>
 
 <style lang="scss">
+	@use '$styles/variables';
 	@use '$styles/utility';
 
 	#menu {
@@ -475,7 +476,7 @@
 
 			&:hover,
 			&.selected {
-				background-color: gray;
+				background-color: variables.$primary-color;
 			}
 
 			img {
@@ -534,19 +535,19 @@
 		}
 
 		.menu-button {
-			@include utility.gray-outline;
+			@include utility.primary-color-outline;
 			@include utility.medium-text;
 			@extend .menu-padding;
 			border-radius: utility.$rounding-standard;
 			transition: utility.$transition-standard;
 
 			&:hover {
-				background-color: gray;
+				background-color: variables.$primary-color;
 			}
 		}
 
 		.menu-input {
-			@include utility.gray-outline;
+			@include utility.primary-color-outline;
 			@include utility.medium-text;
 			@extend .menu-padding;
 			border-radius: utility.$rounding-standard;
@@ -564,7 +565,7 @@
 	}
 
 	#body {
-		@include utility.gray-outline;
+		@include utility.primary-color-outline;
 		display: grid;
 		border-radius: utility.$rounding-standard;
 		margin-top: utility.$width-standard;
@@ -579,7 +580,7 @@
 		}
 
 		#rows {
-			@include utility.gray-outline-top;
+			@include utility.primary-color-outline-top;
 			padding-top: utility.$width-small + 3px;
 		}
 
@@ -600,7 +601,7 @@
 			&:hover {
 				transform: translateY(-2px);
 				font-size: 20px;
-				background-color: rgba(255, 255, 255, 0.05);
+				background-color: variables.$primary-color-dark;
 			}
 		}
 

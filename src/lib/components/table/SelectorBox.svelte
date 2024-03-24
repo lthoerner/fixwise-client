@@ -47,11 +47,12 @@
 </div>
 
 <style lang="scss">
+	@use '$styles/variables';
 	@use '$styles/utility';
 
 	#wrapper {
 		@include utility.flex-row;
-		@include utility.gray-outline;
+		@include utility.primary-color-outline;
 		border-radius: utility.$rounding-standard;
 	}
 
@@ -65,15 +66,14 @@
 		background-color: transparent;
 		border: none;
 		padding: 0;
-		color: white;
 		transition: utility.$transition-standard;
 
 		&:hover {
-			background-color: rgba(255, 255, 255, 0.25);
+			background-color: variables.$primary-color-semidark;
 		}
 
 		&.selected {
-			background-color: gray;
+			background-color: variables.$primary-color;
 		}
 	}
 </style>

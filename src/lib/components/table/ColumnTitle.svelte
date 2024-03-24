@@ -53,7 +53,6 @@
 	}
 
 	span {
-		color: white;
 		font-size: 22px;
 		font-weight: bold;
 	}

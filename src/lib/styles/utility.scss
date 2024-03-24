@@ -1,3 +1,5 @@
+@use '$styles/variables' as *;
+
 $width-tiny: 3px;
 $width-small: 7px;
 $width-standard: 12px;
@@ -43,12 +45,12 @@ $transition-standard: 0.23s ease-out;
     font-size: 16px;
 }
 
-@mixin gray-outline {
-    border: 2px solid gray;
+@mixin primary-color-outline {
+    border: 2px solid $primary-color;
 }
 
-@mixin gray-outline-top {
-    @include gray-outline;
+@mixin primary-color-outline-top {
+    @include primary-color-outline;
     border-bottom-style: none;
     border-left-style: none;
     border-right-style: none;

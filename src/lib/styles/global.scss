@@ -1,6 +1,4 @@
-$text-color: white;
-$background-color: black;
-$primary-color: gray;
+@use '$styles/variables' as *;
 
 body {
     margin: 0;
