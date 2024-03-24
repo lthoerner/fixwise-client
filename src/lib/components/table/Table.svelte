@@ -338,6 +338,9 @@
 			<button class="menu-button" on:click={() => (filterStep = 'column')}>
 				<span>Add Filter</span>
 			</button>
+			<button class="menu-button" on:click={() => (filters = [])}>
+				<span>Reset</span>
+			</button>
 		{/if}
 		{#if filterStep === 'column'}
 			<SelectorBox bind:selector={filterColumns} />
