@@ -366,7 +366,7 @@
 					bind:selector={numericOperators}
 					exclusive={true}
 					required={true}
-					horizontalPadding={18}
+					horizontalPadding={12}
 				/>
 				<input class="menu-input" bind:value={filterQuery} placeholder="Type a number..." />
 			{:else}
