@@ -47,28 +47,26 @@
 </div>
 
 <style lang="scss">
-	@use '$styles/utility' as utility;
+	@use '$styles/utility';
 
 	#wrapper {
 		@include utility.flex-row;
 		@include utility.gray-outline;
-		@include utility.rounded-corners-standard;
+		border-radius: utility.$rounding-standard;
 	}
 
 	.selector-button {
 		@include utility.medium-text;
-
 		padding-top: 7px;
 		padding-bottom: 7px;
 	}
 
 	button {
-		@include utility.transition-standard;
-
 		background-color: transparent;
 		border: none;
 		padding: 0;
 		color: white;
+		transition: utility.$transition-standard;
 
 		&:hover {
 			background-color: rgba(255, 255, 255, 0.25);

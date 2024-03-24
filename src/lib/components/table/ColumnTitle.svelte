@@ -38,14 +38,13 @@
 
 	button {
 		@include utility.flex-row;
-		@include utility.transition-slow;
-
 		padding: 0;
 		background-color: transparent;
 		border: none;
+		transition: utility.$transition-slow;
 
 		&:hover {
-			transform: translateX(-2px) translateY(-2px);
+			transform: translateY(-2px);
 
 			img {
 				opacity: 0.17;
@@ -61,14 +60,12 @@
 
 	div {
 		@include utility.flex-column;
-		@include utility.gap-tiny;
-
-		padding-left: 7px;
+		gap: utility.$width-tiny;
+		padding-left: utility.$width-small;
 
 		img {
-			@include utility.transition-slow;
-
 			opacity: 0;
+			transition: utility.$transition-slow;
 		}
 
 		img.active {

@@ -1,6 +1,12 @@
-@mixin absolute {
-    position: absolute;
-}
+$width-tiny: 3px;
+$width-small: 7px;
+$width-standard: 12px;
+
+$rounding-standard: 0.6em;
+$rounding-sharp: 0.3em;
+
+$transition-slow: 0.3s ease-out;
+$transition-standard: 0.23s ease-out;
 
 @mixin grid-row-auto {
     display: grid;
@@ -24,38 +30,6 @@
     flex-direction: column;
 }
 
-@mixin justify-start {
-    justify-content: flex-start;
-}
-
-@mixin justify-center {
-    justify-content: center;
-}
-
-@mixin justify-end {
-    justify-content: flex-end;
-}
-
-@mixin gap-tiny {
-    gap: 3px;
-}
-
-@mixin gap-small {
-    gap: 7px;
-}
-
-@mixin gap-standard {
-    gap: 15px;
-}
-
-@mixin transition-slow {
-    transition: 0.3s ease-out;
-}
-
-@mixin transition-standard {
-    transition: 0.23s ease-out;
-}
-
 @mixin title-text {
     font-size: 36px;
     font-weight: bold;
@@ -67,14 +41,6 @@
 
 @mixin medium-text {
     font-size: 16px;
-}
-
-@mixin rounded-corners-standard {
-    border-radius: 0.6em;
-}
-
-@mixin rounded-corners-sharp {
-    border-radius: 0.3em;
 }
 
 @mixin gray-outline {

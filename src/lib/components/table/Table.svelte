@@ -453,22 +453,21 @@
 </div>
 
 <style lang="scss">
-	@use '$styles/utility' as utility;
+	@use '$styles/utility';
 
 	#table-menu {
 		@include utility.flex-row;
-		@include utility.gap-standard;
+		gap: utility.$width-standard;
 
 		#regex-button {
-			@include utility.absolute;
-			@include utility.rounded-corners-sharp;
-			@include utility.transition-standard;
-
+			position: absolute;
 			padding-top: 4px;
 			padding-bottom: 4px;
 			padding-left: 5px;
 			padding-right: 5px;
 			margin-right: 6px;
+			border-radius: utility.$rounding-sharp;
+			transition: utility.$transition-standard;
 
 			&:hover,
 			&.selected {
@@ -496,17 +495,16 @@
 
 		#filter-query {
 			@include utility.flex-row;
-			@include utility.justify-end;
+			justify-content: flex-end;
 		}
 
 		#page-navigation {
 			@include utility.flex-row;
-			@include utility.gap-standard;
+			gap: utility.$width-standard;
 
 			img {
-				@include utility.transition-standard;
-
 				opacity: 0.5;
+				transition: utility.$transition-standard;
 
 				&:hover {
 					opacity: 1;
@@ -516,8 +514,7 @@
 
 		.menu-right {
 			@include utility.flex-row;
-			@include utility.gap-small;
-
+			gap: utility.$width-small;
 			margin-left: auto;
 		}
 
@@ -530,10 +527,10 @@
 
 		.menu-button {
 			@include utility.gray-outline;
-			@include utility.rounded-corners-standard;
 			@include utility.medium-text;
-			@include utility.transition-standard;
 			@extend .menu-padding;
+			border-radius: utility.$rounding-standard;
+			transition: utility.$transition-standard;
 
 			&:hover {
 				background-color: gray;
@@ -542,15 +539,15 @@
 
 		.menu-input {
 			@include utility.gray-outline;
-			@include utility.rounded-corners-standard;
 			@include utility.medium-text;
 			@extend .menu-padding;
+			border-radius: utility.$rounding-standard;
 		}
 
 		.icon-pair {
 			@include utility.flex-row;
-			@include utility.gap-small;
 			@include utility.medium-text;
+			gap: utility.$width-small;
 
 			img {
 				height: 1.1em;
@@ -560,55 +557,48 @@
 
 	#table {
 		@include utility.gray-outline;
-		@include utility.rounded-corners-standard;
-
 		display: grid;
-		margin-top: 15px;
-		padding: 15px;
+		border-radius: utility.$rounding-standard;
+		margin-top: utility.$width-standard;
+		padding: utility.$width-standard;
+		padding-top: utility.$width-standard + 12px;
 
 		#column-titles {
 			@include utility.grid-row-auto;
-
-			padding-left: 15px;
-			padding-right: 15px;
-			margin-top: 12px;
-			margin-bottom: 17px;
+			padding-left: utility.$width-standard;
+			padding-right: utility.$width-standard;
+			margin-bottom: utility.$width-standard + 2px;
 		}
 
 		#table-body {
 			@include utility.gray-outline-top;
-
-			padding-top: 10px;
+			padding-top: utility.$width-small + 3px;
 		}
 
 		.grid-item {
 			@include utility.large-text;
-
-			padding-left: 3px;
+			padding-left: utility.$width-tiny;
 		}
 
 		.row {
 			@include utility.grid-row-auto;
-			@include utility.rounded-corners-standard;
-			@include utility.transition-slow;
-
-			padding-left: 15px;
-			padding-right: 15px;
-			padding-top: 10px;
-			padding-bottom: 10px;
+			border-radius: utility.$rounding-standard;
+			padding-left: utility.$width-standard;
+			padding-right: utility.$width-standard;
+			padding-top: utility.$width-small + 3px;
+			padding-bottom: utility.$width-small + 3px;
+			transition: utility.$transition-slow;
 
 			&:hover {
 				transform: translateY(-2px);
 				font-size: 20px;
-				padding-left: 12px;
 				background-color: rgba(255, 255, 255, 0.05);
 			}
 		}
 
 		#placeholder-row {
 			@include utility.flex-row;
-			@include utility.justify-center;
-
+			justify-content: center;
 			font-size: 20px;
 			padding-top: 20px;
 			padding-bottom: 14px;
