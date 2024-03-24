@@ -445,8 +445,10 @@
 		{#if searchedTableData.length > 0}
 			{#each windowedTableData as dataItem}
 				<div class="row">
-					{#each columns as [column, _]}
-						<span class="grid-item">{dataItem[column]}</span>
+					{#each columns as [column_name, column_metadata]}
+						<span class="grid-item" class:shortenable={column_metadata.data_type === 'string'}>
+							{dataItem[column_name]}
+						</span>
 					{/each}
 				</div>
 			{/each}
@@ -586,7 +588,15 @@
 
 		.grid-item {
 			@include utility.large-text;
+			display: inline-block;
 			padding-left: utility.$width-tiny;
+			padding-right: utility.$width-standard;
+
+			&.shortenable {
+				text-overflow: ellipsis;
+				white-space: nowrap;
+				overflow: hidden;
+			}
 		}
 
 		.row {
