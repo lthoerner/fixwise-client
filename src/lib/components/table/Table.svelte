@@ -337,7 +337,7 @@
 	}
 </script>
 
-<div id="table-menu">
+<div id="menu">
 	<SelectorBox bind:selector={lookupType} exclusive={true} required={true} />
 	{#if lookupType.selected.includes('search')}
 		<input id="search" class="menu-input" bind:value={searchQuery} placeholder="Quick search..." />
@@ -430,8 +430,8 @@
 	{/if}
 </div>
 
-<div id="table">
-	<div id="column-titles">
+<div id="body">
+	<div id="column-headers">
 		{#each columns as [column_name, column_metadata]}
 			<ColumnTitle
 				trueName={column_name}
@@ -441,7 +441,7 @@
 			/>
 		{/each}
 	</div>
-	<div id="table-body">
+	<div id="rows">
 		{#if searchedTableData.length > 0}
 			{#each windowedTableData as dataItem}
 				<div class="row">
@@ -459,7 +459,7 @@
 <style lang="scss">
 	@use '$styles/utility';
 
-	#table-menu {
+	#menu {
 		@include utility.flex-row;
 		gap: utility.$width-standard;
 
@@ -563,7 +563,7 @@
 		}
 	}
 
-	#table {
+	#body {
 		@include utility.gray-outline;
 		display: grid;
 		border-radius: utility.$rounding-standard;
@@ -571,14 +571,14 @@
 		padding: utility.$width-standard;
 		padding-top: utility.$width-standard + 12px;
 
-		#column-titles {
+		#column-headers {
 			@include utility.grid-row-auto;
 			padding-left: utility.$width-standard;
 			padding-right: utility.$width-standard;
 			margin-bottom: utility.$width-standard + 2px;
 		}
 
-		#table-body {
+		#rows {
 			@include utility.gray-outline-top;
 			padding-top: utility.$width-small + 3px;
 		}
