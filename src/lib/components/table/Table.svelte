@@ -442,7 +442,7 @@
 		{/each}
 	</div>
 	<div id="rows">
-		{#if searchedTableData.length > 0}
+		{#if windowedTableData.length > 0}
 			{#each windowedTableData as dataItem}
 				<div class="row">
 					{#each columns as [column_name, column_metadata]}
