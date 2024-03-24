@@ -476,7 +476,11 @@
 			border-radius: utility.$rounding-sharp;
 			transition: utility.$transition-standard;
 
-			&:hover,
+			&:hover {
+				cursor: pointer;
+				background-color: variables.$primary-color;
+			}
+
 			&.selected {
 				background-color: variables.$primary-color;
 			}
@@ -518,6 +522,7 @@
 				transition: utility.$transition-standard;
 
 				&:hover {
+					cursor: pointer;
 					opacity: 1;
 				}
 			}
@@ -544,6 +549,7 @@
 			transition: utility.$transition-standard;
 
 			&:hover {
+				cursor: pointer;
 				background-color: variables.$primary-color;
 			}
 		}
@@ -609,6 +615,7 @@
 			transition: utility.$transition-slow;
 
 			&:hover {
+				cursor: pointer;
 				transform: translateY(-2px);
 				font-size: 20px;
 				background-color: variables.$primary-color-dark;

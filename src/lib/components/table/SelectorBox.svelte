@@ -69,6 +69,7 @@
 		transition: utility.$transition-standard;
 
 		&:hover {
+			cursor: pointer;
 			background-color: variables.$primary-color-semidark;
 		}
 

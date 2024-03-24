@@ -44,6 +44,7 @@
 		transition: utility.$transition-slow;
 
 		&:hover {
+			cursor: pointer;
 			transform: translateY(-2px);
 
 			img {
