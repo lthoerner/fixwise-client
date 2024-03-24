@@ -89,7 +89,7 @@
 	}
 
 	function search(item: any, searchQuery: string) {
-		if (searchQuery != '') {
+		if (searchQuery !== '') {
 			const searchQueryLower = searchQuery.toLowerCase();
 			for (const column of columns.keys()) {
 				const searchColumn = item[column].toString().toLowerCase();
@@ -302,7 +302,7 @@
 
 	$: allFilterColumnsNumeric = allColumnsNumeric(filterColumns);
 
-	$: if (inputPage != null && inputPage > totalPages) {
+	$: if (inputPage !== null && inputPage > totalPages) {
 		inputPage = totalPages;
 	}
 	$: if (inputPage === 0) {
@@ -380,7 +380,7 @@
 			<button
 				class="menu-button"
 				on:click={() => {
-					if (filterQuery != '') applyFilter();
+					if (filterQuery !== '') applyFilter();
 				}}
 			>
 				<span>Apply</span>
