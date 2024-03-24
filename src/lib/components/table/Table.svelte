@@ -259,6 +259,8 @@
 		selected: []
 	};
 
+	let emptyTable = false;
+
 	for (const [column_name, column_metadata] of columns.entries()) {
 		filterColumns.options.push({
 			true_name: column_name,
@@ -307,7 +309,6 @@
 	}
 	$: if (inputPage === 0) {
 		inputPage = null;
-		console.log('Nullified input page');
 	}
 	$: realPage = inputPage && inputPage > 0 ? inputPage : 1;
 	$: totalPages = Math.ceil(searchedTableData.length / recordsPerPage);
@@ -326,6 +327,14 @@
 		})
 		.sort((a, b) => compare(a, b, selectedSortColumn, ascendingSort))
 		.map(format);
+
+	$: if (searchedTableData.length === 0) {
+		emptyTable = true;
+	}
+	$: if (emptyTable && searchedTableData.length > 0) {
+		inputPage = 1;
+		emptyTable = false;
+	}
 </script>
 
 <div id="table-menu">
