@@ -378,12 +378,7 @@
 					>
 						<img src="/regex.svg" alt="Use regex" />
 					</button>
-					<input
-						class="menu-input"
-						style="padding-right: 2em;"
-						bind:value={filterQuery}
-						placeholder="Type a query..."
-					/>
+					<input class="menu-input" bind:value={filterQuery} placeholder="Type a query..." />
 				</div>
 			{/if}
 			<button
@@ -505,6 +500,10 @@
 		#filter-query {
 			@include utility.flex-row;
 			justify-content: flex-end;
+
+			input {
+				padding-right: 2em;
+			}
 		}
 
 		#page-navigation {
