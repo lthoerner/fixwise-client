@@ -1,37 +1,5 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   height="512"
-   width="512"
-   version="1.1"
-   id="svg1"
-   sodipodi:docname="regex.svg"
-   inkscape:version="1.3 (0e150ed, 2023-07-21)"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
-  <defs
-     id="defs1" />
-  <sodipodi:namedview
-     id="namedview1"
-     pagecolor="#505050"
-     bordercolor="#eeeeee"
-     borderopacity="1"
-     inkscape:showpageshadow="0"
-     inkscape:pageopacity="0"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#505050"
-     inkscape:zoom="0.96289062"
-     inkscape:cx="256"
-     inkscape:cy="256"
-     inkscape:window-width="1456"
-     inkscape:window-height="1212"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="0"
-     inkscape:current-layer="svg1" />
-  <path
-     d="m309.677124 349.2086182v-118.2942658l-97.4385986 59.7092743-34.350647-59.8398743 101.6825867-55.6431732-101.6825867-56.4703445 34.5251465-58.7483673 97.2640991 59.4459915v-118.7503881h69.4211121v118.7503891l98.1610413-59.4459915 34.7407226 58.7483663-102.1397705 56.4703445 102.1397705 55.6431732-34.877594 60.111908-98.0241699-59.981308v118.2942657h-69.4211121zm-164.5043335 89.5875244c0-55.6698914-60.6798172-90.6524658-108.961525-62.8175354-48.2816963 27.8349609-48.2816849 97.8001099.0000191 125.6350708 48.281704 27.8349304 108.9615059-7.1476441 108.9615059-62.8175354z"
-     id="path1"
-     style="fill:#ffffff;fill-opacity:1" />
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+   <path
+      d="m309.677124 349.2086182v-118.2942658l-97.4385986 59.7092743-34.350647-59.8398743 101.6825867-55.6431732-101.6825867-56.4703445 34.5251465-58.7483673 97.2640991 59.4459915v-118.7503881h69.4211121v118.7503891l98.1610413-59.4459915 34.7407226 58.7483663-102.1397705 56.4703445 102.1397705 55.6431732-34.877594 60.111908-98.0241699-59.981308v118.2942657h-69.4211121zm-164.5043335 89.5875244c0-55.6698914-60.6798172-90.6524658-108.961525-62.8175354-48.2816963 27.8349609-48.2816849 97.8001099.0000191 125.6350708 48.281704 27.8349304 108.9615059-7.1476441 108.9615059-62.8175354z"
+      style="fill: #ffffff; fill-opacity: 1" />
 </svg>

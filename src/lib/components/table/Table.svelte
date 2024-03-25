@@ -2,6 +2,9 @@
 	import Decimal from 'decimal.js';
 	import SelectorBox from './SelectorBox.svelte';
 	import ColumnTitle from './ColumnTitle.svelte';
+	import IconPair from './IconPair.svelte';
+	import PageNavigatorNext from './PageNavigatorIcon.svelte';
+	import PageNavigatorIcon from './PageNavigatorIcon.svelte';
 
 	export let tableData: any[];
 	export let tableSchema: any[];
@@ -173,22 +176,6 @@
 		}
 
 		return 0;
-	}
-
-	function turnPage(next: boolean) {
-		if (next) {
-			if (inputPage && inputPage < totalPages) {
-				inputPage++;
-			} else {
-				inputPage = 1;
-			}
-		} else {
-			if (inputPage && inputPage > 1) {
-				inputPage--;
-			} else {
-				inputPage = totalPages;
-			}
-		}
 	}
 
 	function applyFilter() {
@@ -389,15 +376,9 @@
 			>
 				<span>Apply</span>
 			</button>
-			<div class="icon-pair">
-				<img src="/columns.svg" alt="Columns Selected:" />
-				<span>{filterColumns.selected.length}</span>
-			</div>
+			<IconPair icon="column" bind:text={filterColumns.selected.length} />
 		{/if}
-		<div class="icon-pair">
-			<img src="/filter.svg" alt="Active Filters:" />
-			<span>{filters.length}</span>
-		</div>
+		<IconPair icon="filter" bind:text={filters.length} />
 	{/if}
 	{#if searchedTableData.length > 0}
 		<div class="menu-right">
@@ -413,12 +394,8 @@
 				</div>
 			</div>
 			<div id="page-navigation">
-				<button on:click={() => turnPage(false)}>
-					<img src="/page_navigator_previous.svg" alt="Navigate to next page" />
-				</button>
-				<button on:click={() => turnPage(true)}>
-					<img src="/page_navigator_next.svg" alt="Navigate to previous page" />
-				</button>
+				<PageNavigatorIcon direction="left" bind:inputPage bind:totalPages />
+				<PageNavigatorIcon direction="right" bind:inputPage bind:totalPages />
 			</div>
 		</div>
 	{:else}
@@ -516,16 +493,6 @@
 		#page-navigation {
 			@include utility.flex-row;
 			gap: utility.$width-standard;
-
-			img {
-				opacity: 0.5;
-				transition: utility.$transition-standard;
-
-				&:hover {
-					cursor: pointer;
-					opacity: 1;
-				}
-			}
 		}
 
 		.menu-right {
@@ -559,16 +526,6 @@
 			@include utility.medium-text;
 			@extend .menu-padding;
 			border-radius: utility.$rounding-standard;
-		}
-
-		.icon-pair {
-			@include utility.flex-row;
-			@include utility.medium-text;
-			gap: utility.$width-small;
-
-			img {
-				height: 1.1em;
-			}
 		}
 	}
 
