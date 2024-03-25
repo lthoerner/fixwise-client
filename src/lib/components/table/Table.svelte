@@ -3,9 +3,7 @@
 	import SelectorBox from './SelectorBox.svelte';
 	import ColumnTitle from './ColumnTitle.svelte';
 	import IconPair from './IconPair.svelte';
-	import PageNavigatorNext from './PageNavigatorIcon.svelte';
 	import PageNavigatorIcon from './PageNavigatorIcon.svelte';
-	import Layout from '../../../routes/+layout.svelte';
 
 	export let tableData: any[];
 	export let tableSchema: any[];
