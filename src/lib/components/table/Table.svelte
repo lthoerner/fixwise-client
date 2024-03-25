@@ -5,6 +5,7 @@
 	import IconPair from './IconPair.svelte';
 	import PageNavigatorNext from './PageNavigatorIcon.svelte';
 	import PageNavigatorIcon from './PageNavigatorIcon.svelte';
+	import Layout from '../../../routes/+layout.svelte';
 
 	export let tableData: any[];
 	export let tableSchema: any[];
@@ -334,9 +335,11 @@
 			<button class="menu-button" on:click={() => (filterStep = 'column')}>
 				<span>Add Filter</span>
 			</button>
-			<button class="menu-button" on:click={() => (filters = [])}>
-				<span>Reset</span>
-			</button>
+			{#if filters.length > 0}
+				<button class="menu-button" on:click={() => (filters = [])}>
+					<span>Reset</span>
+				</button>
+			{/if}
 		{/if}
 		{#if filterStep === 'column'}
 			<SelectorBox bind:selector={filterColumns} />
