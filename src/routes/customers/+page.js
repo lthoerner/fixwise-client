@@ -1,6 +1,6 @@
-export async function load({ fetch, url }) {
-    const customerSchema = (await (await fetch(`http://localhost:8080/customers/schema`)).json())['columns'];
+export async function load({ fetch }) {
+    const customerView = (await (await fetch(`http://localhost:8080/views/customers`)).json());
     const customerJson = await (await fetch(`http://localhost:8080/customers`)).json();
 
-    return { customerSchema, customerJson };
+    return { customerView, customerJson };
 }

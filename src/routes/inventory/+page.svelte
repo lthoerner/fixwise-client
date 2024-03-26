@@ -3,4 +3,4 @@
 	export let data;
 </script>
 
-<Table tableData={data.inventoryJson} tableSchema={data.inventorySchema} />
+<Table tableData={data.inventoryJson} tableView={data.inventoryView} />

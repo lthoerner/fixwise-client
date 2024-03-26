@@ -6,18 +6,24 @@
 	import PageNavigatorIcon from './PageNavigatorIcon.svelte';
 
 	export let tableData: any[];
-	export let tableSchema: any[];
+	export let tableView: TableViewRecord;
 
-	type ColumnSchemaRecord = {
+	type TableViewRecord = ColumnViewRecord[];
+
+	type ColumnViewRecord = {
 		name: string;
-		display_name: string;
 		data_type: string;
-		formatting: ColumnFormatting;
+		display_name: string;
+		precedence: number;
+		formatting: ColumnFormatting | null;
 	};
 
-	type ColumnSchema = {
-		display_name: string;
+	type TableView = Map<string, ColumnView>;
+
+	type ColumnView = {
 		data_type: string;
+		display_name: string;
+		precedence: number;
 		formatting: ColumnFormatting;
 	};
 
@@ -221,9 +227,9 @@
 		return true;
 	}
 
-	const columns: Map<string, ColumnSchema> = new Map();
-	for (const column of tableSchema as ColumnSchemaRecord[]) {
-		columns.set(column.name, column as ColumnSchema);
+	const columns: TableView = new Map();
+	for (const column of tableView as ColumnViewRecord[]) {
+		columns.set(column.name, column as ColumnView);
 	}
 
 	const parsedTableData: any[] = parseTableDataTypes();
