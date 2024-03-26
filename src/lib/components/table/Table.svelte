@@ -338,6 +338,17 @@
 					<span>Reset</span>
 				</button>
 			{/if}
+		{:else}
+			<button
+				class="menu-button"
+				on:click={() => {
+					filterStep = null;
+					filterQuery = '';
+					filterColumns.selected = [];
+				}}
+			>
+				<span>Cancel</span>
+			</button>
 		{/if}
 		{#if filterStep === 'column'}
 			<SelectorBox bind:selector={filterColumns} />
@@ -345,7 +356,7 @@
 				class="menu-button"
 				on:click={() => (filterColumns.selected.length > 0 ? (filterStep = 'criteria') : false)}
 			>
-				<span>Done</span>
+				<span>Next</span>
 			</button>
 		{/if}
 		{#if filterStep === 'criteria'}
@@ -369,6 +380,9 @@
 					<input class="menu-input" bind:value={filterQuery} placeholder="Type a query..." />
 				</div>
 			{/if}
+			<button class="menu-button" on:click={() => (filterStep = 'column')}>
+				<span>Back</span>
+			</button>
 			<button
 				class="menu-button"
 				on:click={() => {
@@ -377,6 +391,8 @@
 			>
 				<span>Apply</span>
 			</button>
+		{/if}
+		{#if filterStep !== null}
 			<IconPair icon="column" bind:text={filterColumns.selected.length} />
 		{/if}
 		<IconPair icon="filter" bind:text={filters.length} />
@@ -414,7 +430,8 @@
 			<ColumnTitle
 				trueName={column_name}
 				displayName={column_metadata.display_name}
-				bind:selectedColumn={selectedSortColumn}
+				bind:selectedSortColumn
+				bind:selectedFilterColumns={filterColumns.selected}
 				bind:ascending={ascendingSort}
 			/>
 		{/each}
@@ -446,10 +463,7 @@
 
 		#regex-button {
 			position: absolute;
-			padding-top: 4px;
-			padding-bottom: 4px;
-			padding-left: 5px;
-			padding-right: 5px;
+			padding: 4px 5px;
 			margin-right: 6px;
 			border-radius: utility.$rounding-sharp;
 			transition: utility.$transition-standard;
@@ -503,10 +517,7 @@
 		}
 
 		.menu-padding {
-			padding-top: 7px;
-			padding-bottom: 7px;
-			padding-left: 10px;
-			padding-right: 10px;
+			padding: 7px 10px;
 		}
 
 		.menu-button {
@@ -566,10 +577,7 @@
 		.row {
 			@include utility.grid-row-auto;
 			border-radius: utility.$rounding-standard;
-			padding-left: utility.$width-standard;
-			padding-right: utility.$width-standard;
-			padding-top: utility.$width-small + 3px;
-			padding-bottom: utility.$width-small + 3px;
+			padding: utility.$width-small + 3px utility.$width-standard;
 			transition: utility.$transition-slow;
 
 			&:hover {

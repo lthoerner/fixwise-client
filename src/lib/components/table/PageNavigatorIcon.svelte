@@ -42,7 +42,7 @@
 			cursor: pointer;
 
 			svg path {
-				stroke: variables.$primary-color-semilight;
+				stroke: variables.$primary-color-light;
 			}
 		}
 	}

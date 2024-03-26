@@ -58,8 +58,7 @@
 
 	.selector-button {
 		@include utility.medium-text;
-		padding-top: 7px;
-		padding-bottom: 7px;
+		padding: 7px 0;
 	}
 
 	button {

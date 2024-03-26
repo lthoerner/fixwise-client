@@ -3,20 +3,21 @@
 		if (selected) {
 			ascending = !ascending;
 		} else {
-			selectedColumn = trueName;
+			selectedSortColumn = trueName;
 			ascending = true;
 		}
 	}
 
 	export let trueName: string;
 	export let displayName: string;
-	export let selectedColumn: string;
+	export let selectedSortColumn: string;
+	export let selectedFilterColumns: string[];
 	export let ascending: boolean;
-	$: selected = selectedColumn === trueName;
+	$: selected = selectedSortColumn === trueName;
 </script>
 
 <button on:click={sortColumn}>
-	<span>{displayName}</span>
+	<span class:selected={selectedFilterColumns.includes(trueName)}>{displayName}</span>
 	<div>
 		<img
 			class:active={ascending && selected}
@@ -34,7 +35,8 @@
 </button>
 
 <style lang="scss">
-	@use '$styles/utility' as utility;
+	@use '$styles/variables';
+	@use '$styles/utility';
 
 	button {
 		@include utility.flex-row;
@@ -56,6 +58,10 @@
 	span {
 		font-size: 22px;
 		font-weight: bold;
+
+		// &.selected {
+		// 	background-color: variables.$primary-color-semidark;
+		// }
 	}
 
 	div {

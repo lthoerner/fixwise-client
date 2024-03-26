@@ -13,7 +13,7 @@
 </div>
 
 <style lang="scss">
-	@use '$styles/utility' as utility;
+	@use '$styles/utility';
 
 	nav {
 		@include utility.flex-row;
