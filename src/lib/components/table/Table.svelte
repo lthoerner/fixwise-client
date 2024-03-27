@@ -587,6 +587,12 @@
 			border-radius: variables.$rounding-standard;
 			transition: variables.$transition-slow;
 
+			span {
+				&:hover {
+					cursor: text;
+				}
+			}
+
 			&:hover {
 				cursor: pointer;
 				transform: translateY(-2px);
