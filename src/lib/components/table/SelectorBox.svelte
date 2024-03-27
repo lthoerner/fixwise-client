@@ -57,7 +57,7 @@
 	}
 
 	.selector-button {
-		@include utility.medium-text;
+		font-size: utility.$font-size-standard;
 		padding: 7px 0;
 	}
 

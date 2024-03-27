@@ -17,7 +17,8 @@
 
 	nav {
 		@include utility.flex-row;
-		@include utility.title-text;
+		font-size: utility.$font-size-title;
+		font-weight: bold;
 
 		background-color: purple;
 

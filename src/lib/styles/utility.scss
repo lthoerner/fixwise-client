@@ -7,13 +7,12 @@ $width-standard: 12px;
 $rounding-standard: 0.6em;
 $rounding-sharp: 0.3em;
 
+$font-size-standard: 16px;
+$font-size-large: 18px;
+$font-size-title: 28px;
+
 $transition-slow: 0.3s ease-out;
 $transition-standard: 0.23s ease-out;
-
-@mixin grid-row-auto {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-}
 
 @mixin flex {
     display: flex;
@@ -32,26 +31,14 @@ $transition-standard: 0.23s ease-out;
     flex-direction: column;
 }
 
-@mixin title-text {
-    font-size: 28px;
-    font-weight: bold;
-}
-
-@mixin large-text {
-    font-size: 18px;
-}
-
-@mixin medium-text {
-    font-size: 16px;
-}
 
 @mixin primary-color-outline {
     border: 2px solid $primary-color;
 }
 
-@mixin primary-color-outline-top {
+@mixin primary-color-outline-bottom {
     @include primary-color-outline;
-    border-bottom-style: none;
+    border-top-style: none;
     border-left-style: none;
     border-right-style: none;
 }

@@ -430,7 +430,7 @@
 	{/if}
 </div>
 
-<div id="body">
+<div id="body" style="--num-columns: {columns.size}">
 	<div id="column-headers">
 		{#each columns as [column_name, column_metadata]}
 			<ColumnTitle
@@ -442,21 +442,19 @@
 			/>
 		{/each}
 	</div>
-	<div id="rows">
-		{#if windowedTableData.length > 0}
-			{#each windowedTableData as dataItem}
-				<div class="row">
-					{#each columns as [column_name, column_metadata]}
-						<span class="grid-item" class:shortenable={column_metadata.data_type === 'string'}>
-							{dataItem[column_name]}
-						</span>
-					{/each}
-				</div>
-			{/each}
-		{:else}
-			<div id="placeholder-row"><span>No items to show</span></div>
-		{/if}
-	</div>
+	{#if windowedTableData.length > 0}
+		{#each windowedTableData as dataItem}
+			<div class="row">
+				{#each columns as [column_name, column_metadata]}
+					<span class="grid-item" class:shortenable={column_metadata.data_type === 'string'}>
+						{dataItem[column_name]}
+					</span>
+				{/each}
+			</div>
+		{/each}
+	{:else}
+		<div id="placeholder-row"><span>No items to show</span></div>
+	{/if}
 </div>
 
 <style lang="scss">
@@ -528,8 +526,8 @@
 
 		.menu-button {
 			@include utility.primary-color-outline;
-			@include utility.medium-text;
 			@extend .menu-padding;
+			font-size: utility.$font-size-standard;
 			border-radius: utility.$rounding-standard;
 			transition: utility.$transition-standard;
 
@@ -541,8 +539,8 @@
 
 		.menu-input {
 			@include utility.primary-color-outline;
-			@include utility.medium-text;
 			@extend .menu-padding;
+			font-size: utility.$font-size-standard;
 			border-radius: utility.$rounding-standard;
 		}
 	}
@@ -550,26 +548,27 @@
 	#body {
 		@include utility.primary-color-outline;
 		display: grid;
+		grid-template-columns: repeat(var(--num-columns), auto);
+		justify-content: space-between;
+		grid-auto-rows: min-content;
 		border-radius: utility.$rounding-standard;
 		margin-top: utility.$width-standard;
 		padding: utility.$width-standard;
 		padding-top: utility.$width-standard + 12px;
 
 		#column-headers {
-			@include utility.grid-row-auto;
+			@include utility.primary-color-outline-bottom;
+			display: grid;
+			grid-column: 1 / span var(--num-columns);
+			grid-template-columns: subgrid;
 			padding-left: utility.$width-standard;
 			padding-right: utility.$width-standard;
-			margin-bottom: utility.$width-standard + 2px;
-		}
-
-		#rows {
-			@include utility.primary-color-outline-top;
-			padding-top: utility.$width-small + 3px;
+			padding-bottom: utility.$width-standard + 2px;
+			margin-bottom: utility.$width-small + 3px;
 		}
 
 		.grid-item {
-			@include utility.large-text;
-			display: inline-block;
+			font-size: utility.$font-size-large;
 			padding-left: utility.$width-tiny;
 			padding-right: utility.$width-standard;
 
@@ -581,15 +580,16 @@
 		}
 
 		.row {
-			@include utility.grid-row-auto;
-			border-radius: utility.$rounding-standard;
+			display: grid;
+			grid-template-columns: subgrid;
+			grid-column: 1 / span var(--num-columns);
 			padding: utility.$width-small + 3px utility.$width-standard;
+			border-radius: utility.$rounding-standard;
 			transition: utility.$transition-slow;
 
 			&:hover {
 				cursor: pointer;
 				transform: translateY(-2px);
-				font-size: 20px;
 				background-color: variables.$primary-color-dark;
 			}
 		}
@@ -597,10 +597,11 @@
 		#placeholder-row {
 			@include utility.flex-row;
 			justify-content: center;
-			font-size: 20px;
+			grid-column: 1 / span var(--num-columns);
+			font-size: utility.$font-size-large;
+			font-weight: bold;
 			padding-top: 20px;
 			padding-bottom: 14px;
-			padding-left: 15px;
 		}
 	}
 </style>

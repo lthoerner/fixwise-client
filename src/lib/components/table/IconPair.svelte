@@ -21,7 +21,7 @@
 
 	div {
 		@include utility.flex-row;
-		@include utility.medium-text;
+		font-size: utility.$font-size-standard;
 		gap: utility.$width-small;
 
 		svg {
