@@ -14,7 +14,7 @@
 		name: string;
 		data_type: string;
 		display_name: string;
-		precedence: number;
+		trimmable: boolean;
 		formatting: ColumnFormatting | null;
 	};
 
@@ -23,7 +23,7 @@
 	type ColumnView = {
 		data_type: string;
 		display_name: string;
-		precedence: number;
+		trimmable: boolean;
 		formatting: ColumnFormatting;
 	};
 
@@ -446,7 +446,7 @@
 		{#each windowedTableData as dataItem}
 			<div class="row">
 				{#each columns as [column_name, column_metadata]}
-					<span class="grid-item" class:shortenable={column_metadata.data_type === 'string'}>
+					<span class="grid-item" class:trimmable={column_metadata.trimmable}>
 						{dataItem[column_name]}
 					</span>
 				{/each}
@@ -572,7 +572,7 @@
 			padding-left: variables.$width-tiny;
 			padding-right: variables.$width-standard;
 
-			&.shortenable {
+			&.trimmable {
 				text-overflow: ellipsis;
 				white-space: nowrap;
 				overflow: hidden;
