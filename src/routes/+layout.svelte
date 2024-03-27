@@ -39,8 +39,6 @@
 	}
 
 	#page-body {
-		margin-right: 25px;
-		margin-left: 25px;
-		padding-top: 25px;
+		padding: 25px;
 	}
 </style>
