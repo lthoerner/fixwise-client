@@ -569,8 +569,9 @@
 
 		.grid-item {
 			font-size: variables.$font-size-large;
-			padding-left: variables.$width-tiny;
-			padding-right: variables.$width-standard;
+			margin-left: variables.$width-tiny;
+			margin-right: variables.$width-standard;
+			max-width: fit-content;
 
 			&.trimmable {
 				text-overflow: ellipsis;
