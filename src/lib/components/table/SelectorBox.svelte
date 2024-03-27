@@ -53,11 +53,11 @@
 	#wrapper {
 		@include utility.flex-row;
 		@include utility.primary-color-outline;
-		border-radius: utility.$rounding-standard;
+		border-radius: variables.$rounding-standard;
 	}
 
 	.selector-button {
-		font-size: utility.$font-size-standard;
+		font-size: variables.$font-size-standard;
 		padding: 7px 0;
 	}
 
@@ -65,7 +65,7 @@
 		background-color: transparent;
 		border: none;
 		padding: 0;
-		transition: utility.$transition-standard;
+		transition: variables.$transition-standard;
 
 		&:hover {
 			cursor: pointer;

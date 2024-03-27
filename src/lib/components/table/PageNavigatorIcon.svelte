@@ -35,7 +35,7 @@
 	button {
 		svg path {
 			stroke: variables.$primary-color;
-			transition: utility.$transition-standard;
+			transition: variables.$transition-standard;
 		}
 
 		&:hover {

@@ -43,7 +43,7 @@
 		padding: 0;
 		background-color: transparent;
 		border: none;
-		transition: utility.$transition-slow;
+		transition: variables.$transition-slow;
 
 		&:hover {
 			cursor: pointer;
@@ -66,12 +66,12 @@
 
 	div {
 		@include utility.flex-column;
-		gap: utility.$width-tiny;
-		padding-left: utility.$width-small;
+		gap: variables.$width-tiny;
+		padding-left: variables.$width-small;
 
 		img {
 			opacity: 0;
-			transition: utility.$transition-slow;
+			transition: variables.$transition-slow;
 		}
 
 		img.active {

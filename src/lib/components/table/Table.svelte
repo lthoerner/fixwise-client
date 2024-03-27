@@ -463,14 +463,14 @@
 
 	#menu {
 		@include utility.flex-row;
-		gap: utility.$width-standard;
+		gap: variables.$width-standard;
 
 		#regex-button {
 			position: absolute;
 			padding: 4px 5px;
 			margin-right: 6px;
-			border-radius: utility.$rounding-sharp;
-			transition: utility.$transition-standard;
+			border-radius: variables.$rounding-sharp;
+			transition: variables.$transition-standard;
 
 			&:hover {
 				cursor: pointer;
@@ -511,12 +511,12 @@
 
 		#page-navigation {
 			@include utility.flex-row;
-			gap: utility.$width-standard;
+			gap: variables.$width-standard;
 		}
 
 		.menu-right {
 			@include utility.flex-row;
-			gap: utility.$width-small;
+			gap: variables.$width-small;
 			margin-left: auto;
 		}
 
@@ -527,9 +527,9 @@
 		.menu-button {
 			@include utility.primary-color-outline;
 			@extend .menu-padding;
-			font-size: utility.$font-size-standard;
-			border-radius: utility.$rounding-standard;
-			transition: utility.$transition-standard;
+			font-size: variables.$font-size-standard;
+			border-radius: variables.$rounding-standard;
+			transition: variables.$transition-standard;
 
 			&:hover {
 				cursor: pointer;
@@ -540,8 +540,8 @@
 		.menu-input {
 			@include utility.primary-color-outline;
 			@extend .menu-padding;
-			font-size: utility.$font-size-standard;
-			border-radius: utility.$rounding-standard;
+			font-size: variables.$font-size-standard;
+			border-radius: variables.$rounding-standard;
 		}
 	}
 
@@ -551,26 +551,26 @@
 		grid-template-columns: repeat(var(--num-columns), auto);
 		justify-content: space-between;
 		grid-auto-rows: min-content;
-		border-radius: utility.$rounding-standard;
-		margin-top: utility.$width-standard;
-		padding: utility.$width-standard;
-		padding-top: utility.$width-standard + 12px;
+		border-radius: variables.$rounding-standard;
+		margin-top: variables.$width-standard;
+		padding: variables.$width-standard;
+		padding-top: variables.$width-standard + 12px;
 
 		#column-headers {
 			@include utility.primary-color-outline-bottom;
 			display: grid;
 			grid-column: 1 / span var(--num-columns);
 			grid-template-columns: subgrid;
-			padding-left: utility.$width-standard;
-			padding-right: utility.$width-standard;
-			padding-bottom: utility.$width-standard + 2px;
-			margin-bottom: utility.$width-small + 3px;
+			padding-left: variables.$width-standard;
+			padding-right: variables.$width-standard;
+			padding-bottom: variables.$width-standard + 2px;
+			margin-bottom: variables.$width-small + 3px;
 		}
 
 		.grid-item {
-			font-size: utility.$font-size-large;
-			padding-left: utility.$width-tiny;
-			padding-right: utility.$width-standard;
+			font-size: variables.$font-size-large;
+			padding-left: variables.$width-tiny;
+			padding-right: variables.$width-standard;
 
 			&.shortenable {
 				text-overflow: ellipsis;
@@ -583,9 +583,9 @@
 			display: grid;
 			grid-template-columns: subgrid;
 			grid-column: 1 / span var(--num-columns);
-			padding: utility.$width-small + 3px utility.$width-standard;
-			border-radius: utility.$rounding-standard;
-			transition: utility.$transition-slow;
+			padding: variables.$width-small + 3px variables.$width-standard;
+			border-radius: variables.$rounding-standard;
+			transition: variables.$transition-slow;
 
 			&:hover {
 				cursor: pointer;
@@ -598,7 +598,7 @@
 			@include utility.flex-row;
 			justify-content: center;
 			grid-column: 1 / span var(--num-columns);
-			font-size: utility.$font-size-large;
+			font-size: variables.$font-size-large;
 			font-weight: bold;
 			padding-top: 20px;
 			padding-bottom: 14px;

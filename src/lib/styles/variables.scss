@@ -4,3 +4,17 @@ $primary-color: gray;
 $primary-color-light: lighten($primary-color, 50%);
 $primary-color-semidark: darken($primary-color, 25%);
 $primary-color-dark: darken($primary-color, 43%);
+
+$width-tiny: 3px;
+$width-small: 7px;
+$width-standard: 12px;
+
+$rounding-standard: 0.6em;
+$rounding-sharp: 0.3em;
+
+$font-size-standard: 16px;
+$font-size-large: 18px;
+$font-size-title: 28px;
+
+$transition-slow: 0.3s ease-out;
+$transition-standard: 0.23s ease-out;

@@ -21,8 +21,8 @@
 
 	div {
 		@include utility.flex-row;
-		font-size: utility.$font-size-standard;
-		gap: utility.$width-small;
+		font-size: variables.$font-size-standard;
+		gap: variables.$width-small;
 
 		svg {
 			height: 1.1em;

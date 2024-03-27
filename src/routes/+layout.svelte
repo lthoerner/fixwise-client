@@ -13,11 +13,12 @@
 </div>
 
 <style lang="scss">
+	@use '$styles/variables';
 	@use '$styles/utility';
 
 	nav {
 		@include utility.flex-row;
-		font-size: utility.$font-size-title;
+		font-size: variables.$font-size-title;
 		font-weight: bold;
 
 		background-color: purple;
@@ -28,7 +29,7 @@
 			padding-left: 25px;
 			padding-right: 25px;
 			text-decoration: none;
-			transition: utility.$transition-standard;
+			transition: variables.$transition-standard;
 
 			&:hover {
 				cursor: pointer;
