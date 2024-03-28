@@ -549,8 +549,9 @@
 		@include utility.primary-color-outline;
 		display: grid;
 		grid-template-columns: repeat(var(--num-columns), auto);
-		justify-content: space-between;
 		grid-auto-rows: min-content;
+		column-gap: variables.$width-large;
+		justify-content: space-between;
 		border-radius: variables.$rounding-standard;
 		margin-top: variables.$width-standard;
 		padding: variables.$width-standard;
@@ -569,8 +570,6 @@
 
 		.grid-item {
 			font-size: variables.$font-size-large;
-			margin-left: variables.$width-tiny;
-			margin-right: variables.$width-standard;
 			max-width: fit-content;
 
 			&.trimmable {
