@@ -3,4 +3,4 @@
 	export let data;
 </script>
 
-<Table tableData={data.customerJson} tableView={data.customerView} />
+<Table tableData={data.customersJson} tableView={data.customersView} />

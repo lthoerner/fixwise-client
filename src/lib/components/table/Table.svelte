@@ -12,8 +12,8 @@
 
 	type ColumnViewRecord = {
 		name: string;
-		data_type: string;
 		display_name: string;
+		data_type: string;
 		trimmable: boolean;
 		formatting: ColumnFormatting | null;
 	};
@@ -21,8 +21,8 @@
 	type TableView = Map<string, ColumnView>;
 
 	type ColumnView = {
-		data_type: string;
 		display_name: string;
+		data_type: string;
 		trimmable: boolean;
 		formatting: ColumnFormatting;
 	};
@@ -66,6 +66,10 @@
 				for (let item of tableData) {
 					item[column_name] = new Decimal(item[column_name]);
 				}
+			} else if (column_metadata.data_type === 'timestamp') {
+				for (let item of tableData) {
+					item[column_name] = new Date(item[column_name]);
+				}
 			}
 		}
 
@@ -73,24 +77,34 @@
 	}
 
 	function format(item: any) {
-		let formattedItem = {
-			...item
-		};
+		let formattedItem = {...item};
+
 		for (const [column_name, column_metadata] of columns.entries()) {
-			let value = item[column_name];
+			let initialValue = item[column_name];
+			let workingValue = initialValue;
 
 			if (column_metadata.data_type === 'decimal') {
-				value = new Decimal(value).toFixed(2).toString();
+				workingValue = (initialValue as Decimal).toFixed(2);
+			} else if (column_metadata.data_type === 'timestamp') {
+				let date = initialValue as Date;
+				let day = String(date.getDate());
+				let month = String(date.getMonth() + 1);
+				let year = String(date.getFullYear());
+				let hours = String(date.getHours());
+				let minutes = String(date.getMinutes()).padStart(2, '0');
+				workingValue = `${day}/${month}/${year} ${hours}:${minutes}`;
 			}
 
 			if (column_metadata.formatting) {
 				if (column_metadata.formatting.pad_length) {
-					value = value.toString().padStart(column_metadata.formatting.pad_length, '0');
+					workingValue = workingValue.toString().padStart(column_metadata.formatting.pad_length, '0');
 				}
 
-				formattedItem[column_name] =
-					`${column_metadata.formatting.prefix ?? ''}${value}${column_metadata.formatting.suffix ?? ''}`;
+				workingValue =
+					`${column_metadata.formatting.prefix ?? ''}${workingValue}${column_metadata.formatting.suffix ?? ''}`;
 			}
+
+			formattedItem[column_name] = workingValue;
 		}
 
 		return formattedItem;
@@ -305,20 +319,20 @@
 	$: realPage = inputPage && inputPage > 0 ? inputPage : 1;
 	$: totalPages = Math.ceil(searchedTableData.length / recordsPerPage);
 
-	$: windowedTableData = searchedTableData.slice(
-		(realPage - 1) * recordsPerPage,
-		realPage * recordsPerPage
-	);
 	$: searchedTableData = parsedTableData
+		.sort((a, b) => compare(a, b, selectedSortColumn, ascendingSort))
+		.map(format)
 		.filter((item) => {
 			if (lookupType.selected.includes('search')) {
 				return search(item, searchQuery);
 			} else if (lookupType.selected.includes('filter')) {
 				return filter(item, filters);
 			}
-		})
-		.sort((a, b) => compare(a, b, selectedSortColumn, ascendingSort))
-		.map(format);
+		});
+	$: windowedTableData = searchedTableData.slice(
+		(realPage - 1) * recordsPerPage,
+		realPage * recordsPerPage
+	);
 
 	$: if (searchedTableData.length === 0) {
 		emptyTable = true;

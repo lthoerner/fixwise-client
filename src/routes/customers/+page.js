@@ -1,6 +1,8 @@
 export async function load({ fetch }) {
-    const customerView = (await (await fetch(`http://localhost:8080/views/customers`)).json());
-    const customerJson = await (await fetch(`http://localhost:8080/customers`)).json();
+	const customersJson = await (await fetch(`http://localhost:8080/customers`)).json();
+	const customersView = (await (await fetch(`http://localhost:8080/views/customers`)).json())[
+		'columns'
+	];
 
-    return { customerView, customerJson };
+	return { customersView, customersJson };
 }
