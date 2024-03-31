@@ -69,12 +69,12 @@
 	function parseRowDataTypes() {
 		for (const [column_name, column_metadata] of columns.entries()) {
 			if (column_metadata.data_type === 'decimal') {
-				for (let item of tableRows) {
-					item[column_name] = new Decimal(item[column_name]);
+				for (let row of tableRows) {
+					row[column_name] = new Decimal(row[column_name]);
 				}
 			} else if (column_metadata.data_type === 'timestamp') {
-				for (let item of tableRows) {
-					item[column_name] = new Date(item[column_name]);
+				for (let row of tableRows) {
+					row[column_name] = new Date(row[column_name]);
 				}
 			}
 		}
@@ -82,11 +82,11 @@
 		return tableRows;
 	}
 
-	function format(item: any) {
-		let formattedItem = { ...item };
+	function format(row: any) {
+		let formattedRow = { ...row };
 
 		for (const [column_name, column_metadata] of columns.entries()) {
-			let initialValue = item[column_name];
+			let initialValue = row[column_name];
 			let workingValue = initialValue;
 
 			if (column_metadata.data_type === 'decimal') {
@@ -111,20 +111,20 @@
 				workingValue = `${column_metadata.formatting.prefix ?? ''}${workingValue}${column_metadata.formatting.suffix ?? ''}`;
 			}
 
-			formattedItem[column_name] = workingValue;
+			formattedRow[column_name] = workingValue;
 		}
 
-		return formattedItem;
+		return formattedRow;
 	}
 
-	function isSearchMatch(item: any, query: string): boolean {
+	function isSearchMatch(row: any, query: string): boolean {
 		if (query === '') {
 			return true;
 		}
 
 		const searchQueryLower = searchQuery.toLowerCase();
 		for (const column of columns.keys()) {
-			const searchColumn = item[column].toString().toLowerCase();
+			const searchColumn = row[column].toString().toLowerCase();
 			if (searchColumn.includes(searchQueryLower)) {
 				return true;
 			}
@@ -133,13 +133,13 @@
 		return false;
 	}
 
-	function isFilterMatch(parsedItem: any, formattedItem: any, filters: Filter[]): boolean {
+	function isFilterMatch(parsedRow: any, formattedRow: any, filters: Filter[]): boolean {
 		for (const filter of filters) {
 			const criteria = filter.criteria;
 
 			for (const column of filter.columns) {
-				const parsedColumnValue = parsedItem[column];
-				const formattedColumnValue = formattedItem[column].toString();
+				const parsedColumnValue = parsedRow[column];
+				const formattedColumnValue = formattedRow[column].toString();
 
 				if (criteria.type === 'string_criteria') {
 					if (criteria.regex) {
@@ -527,17 +527,17 @@
 		{/each}
 	</div>
 	{#if windowedRows.length > 0}
-		{#each windowedRows as dataItem}
+		{#each windowedRows as row}
 			<div class="row">
 				{#each columns as [column_name, column_metadata]}
 					<span class="grid-item" class:trimmable={column_metadata.trimmable}>
-						{dataItem[column_name]}
+						{row[column_name]}
 					</span>
 				{/each}
 			</div>
 		{/each}
 	{:else}
-		<div id="placeholder-row"><span>No items to show</span></div>
+		<div id="placeholder-row"><span>No rows to display</span></div>
 	{/if}
 </div>
 
