@@ -37,6 +37,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"decimal.js": "^10.4.3",
 		"decimal.js-light": "^2.5.1"
 	}
 }

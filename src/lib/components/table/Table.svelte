@@ -5,7 +5,7 @@
 	import IconPair from './IconPair.svelte';
 	import PageNavigatorIcon from './PageNavigatorIcon.svelte';
 
-	export let tableData: any[];
+	export let tableRows: any[];
 	export let tableView: TableViewRecord;
 
 	type TableViewRecord = ColumnViewRecord[];
@@ -45,7 +45,7 @@
 
 	type Filter = {
 		columns: string[];
-		criteria: StringCriteria | NumericCriteria;
+		criteria: StringCriteria | NumericCriteria | DateCriteria;
 	};
 
 	type StringCriteria = {
@@ -60,24 +60,30 @@
 		type: 'numeric_criteria';
 	};
 
-	function parseTableDataTypes() {
+	type DateCriteria = {
+		operator: 'after' | 'before' | 'on';
+		value: Date;
+		type: 'date_criteria';
+	};
+
+	function parseRowDataTypes() {
 		for (const [column_name, column_metadata] of columns.entries()) {
 			if (column_metadata.data_type === 'decimal') {
-				for (let item of tableData) {
+				for (let item of tableRows) {
 					item[column_name] = new Decimal(item[column_name]);
 				}
 			} else if (column_metadata.data_type === 'timestamp') {
-				for (let item of tableData) {
+				for (let item of tableRows) {
 					item[column_name] = new Date(item[column_name]);
 				}
 			}
 		}
 
-		return tableData;
+		return tableRows;
 	}
 
 	function format(item: any) {
-		let formattedItem = {...item};
+		let formattedItem = { ...item };
 
 		for (const [column_name, column_metadata] of columns.entries()) {
 			let initialValue = item[column_name];
@@ -87,21 +93,22 @@
 				workingValue = (initialValue as Decimal).toFixed(2);
 			} else if (column_metadata.data_type === 'timestamp') {
 				let date = initialValue as Date;
-				let day = String(date.getDate());
-				let month = String(date.getMonth() + 1);
+				let day = String(date.getDate()).padStart(2, '0');
+				let month = String(date.getMonth() + 1).padStart(2, '0');
 				let year = String(date.getFullYear());
-				let hours = String(date.getHours());
+				let hours = String(date.getHours()).padStart(2, '0');
 				let minutes = String(date.getMinutes()).padStart(2, '0');
 				workingValue = `${day}/${month}/${year} ${hours}:${minutes}`;
 			}
 
 			if (column_metadata.formatting) {
 				if (column_metadata.formatting.pad_length) {
-					workingValue = workingValue.toString().padStart(column_metadata.formatting.pad_length, '0');
+					workingValue = workingValue
+						.toString()
+						.padStart(column_metadata.formatting.pad_length, '0');
 				}
 
-				workingValue =
-					`${column_metadata.formatting.prefix ?? ''}${workingValue}${column_metadata.formatting.suffix ?? ''}`;
+				workingValue = `${column_metadata.formatting.prefix ?? ''}${workingValue}${column_metadata.formatting.suffix ?? ''}`;
 			}
 
 			formattedItem[column_name] = workingValue;
@@ -110,55 +117,74 @@
 		return formattedItem;
 	}
 
-	function search(item: any, searchQuery: string) {
-		if (searchQuery !== '') {
-			const searchQueryLower = searchQuery.toLowerCase();
-			for (const column of columns.keys()) {
-				const searchColumn = item[column].toString().toLowerCase();
-				if (searchColumn.includes(searchQueryLower)) {
-					return item;
-				}
-			}
-
-			return;
+	function isSearchMatch(item: any, query: string): boolean {
+		if (query === '') {
+			return true;
 		}
 
-		return item;
+		const searchQueryLower = searchQuery.toLowerCase();
+		for (const column of columns.keys()) {
+			const searchColumn = item[column].toString().toLowerCase();
+			if (searchColumn.includes(searchQueryLower)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
-	function filter(item: any, filters: Filter[]) {
+	function isFilterMatch(parsedItem: any, formattedItem: any, filters: Filter[]): boolean {
 		for (const filter of filters) {
 			const criteria = filter.criteria;
 
 			for (const column of filter.columns) {
-				const columnValue = item[column].toString();
+				const parsedColumnValue = parsedItem[column];
+				const formattedColumnValue = formattedItem[column].toString();
 
 				if (criteria.type === 'string_criteria') {
 					if (criteria.regex) {
-						const regex = new RegExp(criteria.value, 'i');
-						if (!regex.test(columnValue)) {
-							return;
+						const regex = new RegExp(criteria.value);
+						if (!regex.test(formattedColumnValue)) {
+							return false;
 						}
 					} else {
-						if (!columnValue.includes(criteria.value)) {
-							return;
+						if (!formattedColumnValue.includes(criteria.value)) {
+							return false;
 						}
 					}
 				} else if (criteria.type === 'numeric_criteria') {
 					switch (criteria.operator) {
 						case 'greater_than':
-							if (!(columnValue > criteria.value)) {
-								return;
+							if (!(parsedColumnValue > criteria.value)) {
+								return false;
 							}
 							break;
 						case 'less_than':
-							if (!(columnValue < criteria.value)) {
-								return;
+							if (!(parsedColumnValue < criteria.value)) {
+								return false;
 							}
 							break;
 						case 'equals':
-							if (columnValue !== criteria.value) {
-								return;
+							if (parsedColumnValue !== criteria.value) {
+								return false;
+							}
+							break;
+					}
+				} else if (criteria.type === 'date_criteria') {
+					switch (criteria.operator) {
+						case 'after':
+							if (!(parsedColumnValue > criteria.value)) {
+								return false;
+							}
+							break;
+						case 'before':
+							if (!(parsedColumnValue < criteria.value)) {
+								return false;
+							}
+							break;
+						case 'on':
+							if (parsedColumnValue !== criteria.value) {
+								return false;
 							}
 							break;
 					}
@@ -166,7 +192,7 @@
 			}
 		}
 
-		return item;
+		return true;
 	}
 
 	function compare(a: any, b: any, selectedSortColumn: string, ascendingSort: boolean) {
@@ -197,13 +223,40 @@
 		return 0;
 	}
 
-	function applyFilter() {
-		let criteria: StringCriteria | NumericCriteria;
+	function getFilteredRows(mode: string, searchQuery: string, filters: Filter[]): any[] {
+		const num_rows = parsedRows.length;
+		const searchMode = mode === 'search';
+		const filterMode = mode === 'filter';
+
+		let filteredRows = [];
+
+		for (let i = 0; i < num_rows; i++) {
+			const parsedRow = parsedRows[i];
+			const formattedRow = formattedRows[i];
+
+			if (searchMode && isSearchMatch(formattedRow, searchQuery)) {
+				filteredRows.push(formattedRow);
+			} else if (filterMode && isFilterMatch(parsedRow, formattedRow, filters)) {
+				filteredRows.push(formattedRow);
+			}
+		}
+
+		return filteredRows;
+	}
+
+	function saveFilter() {
+		let criteria: StringCriteria | NumericCriteria | DateCriteria;
 		if (allFilterColumnsNumeric) {
 			criteria = {
 				operator: numericOperators.selected[0] as 'greater_than' | 'less_than' | 'equals',
 				value: parseFloat(filterQuery),
 				type: 'numeric_criteria'
+			};
+		} else if (allFilterColumnsDate) {
+			criteria = {
+				operator: dateOperators.selected[0] as 'after' | 'before' | 'on',
+				value: new Date(filterQuery),
+				type: 'date_criteria'
 			};
 		} else {
 			criteria = {
@@ -229,11 +282,17 @@
 	}
 
 	function allColumnsNumeric(selectedColumns: Selector) {
-		const numericTypes = ['decimal', 'integer'];
+		return allColumnsAreType(selectedColumns, ['decimal', 'integer']);
+	}
+
+	function allColumnsDate(selectedColumns: Selector) {
+		return allColumnsAreType(selectedColumns, ['timestamp']);
+	}
+
+	function allColumnsAreType(selectedColumns: Selector, types: string[]) {
 		for (const column_name of selectedColumns.selected) {
-			// Throw error here?
 			const column = columns.get(column_name);
-			if (column && !numericTypes.includes(column.data_type)) {
+			if (column && !types.includes(column.data_type)) {
 				return false;
 			}
 		}
@@ -246,7 +305,7 @@
 		columns.set(column.name, column as ColumnView);
 	}
 
-	const parsedTableData: any[] = parseTableDataTypes();
+	const parsedRows: any[] = parseRowDataTypes();
 
 	let selectedSortColumn = columns.keys().next().value;
 	let ascendingSort = true;
@@ -306,9 +365,35 @@
 		selected: ['equals']
 	};
 
+	let dateOperators: Selector = {
+		options: [
+			{
+				true_name: 'after',
+				display_name: '>'
+			},
+			{
+				true_name: 'before',
+				display_name: '<'
+			},
+			{
+				true_name: 'on',
+				display_name: '='
+			}
+		],
+		selected: ['on']
+	};
+
 	let useRegex = false;
 
 	$: allFilterColumnsNumeric = allColumnsNumeric(filterColumns);
+	$: allFilterColumnsDate = allColumnsDate(filterColumns);
+
+	$: formattedRows = parsedRows.map(format);
+	$: filteredRows = getFilteredRows(lookupType.selected[0], searchQuery, filters);
+	$: numViewableRows = filteredRows.length;
+	$: windowedRows = filteredRows
+		.sort((a, b) => compare(a, b, selectedSortColumn, ascendingSort))
+		.slice((realPage - 1) * recordsPerPage, realPage * recordsPerPage);
 
 	$: if (inputPage !== null && inputPage > totalPages) {
 		inputPage = totalPages;
@@ -317,27 +402,12 @@
 		inputPage = null;
 	}
 	$: realPage = inputPage && inputPage > 0 ? inputPage : 1;
-	$: totalPages = Math.ceil(searchedTableData.length / recordsPerPage);
+	$: totalPages = Math.ceil(numViewableRows / recordsPerPage);
 
-	$: searchedTableData = parsedTableData
-		.sort((a, b) => compare(a, b, selectedSortColumn, ascendingSort))
-		.map(format)
-		.filter((item) => {
-			if (lookupType.selected.includes('search')) {
-				return search(item, searchQuery);
-			} else if (lookupType.selected.includes('filter')) {
-				return filter(item, filters);
-			}
-		});
-	$: windowedTableData = searchedTableData.slice(
-		(realPage - 1) * recordsPerPage,
-		realPage * recordsPerPage
-	);
-
-	$: if (searchedTableData.length === 0) {
+	$: if (numViewableRows === 0) {
 		emptyTable = true;
 	}
-	$: if (emptyTable && searchedTableData.length > 0) {
+	$: if (emptyTable && numViewableRows > 0) {
 		inputPage = 1;
 		emptyTable = false;
 	}
@@ -380,7 +450,7 @@
 			</button>
 		{/if}
 		{#if filterStep === 'criteria'}
-			{#if allFilterColumnsNumeric}
+			{#if allFilterColumnsNumeric || allFilterColumnsDate}
 				<SelectorBox
 					bind:selector={numericOperators}
 					exclusive={true}
@@ -406,7 +476,7 @@
 			<button
 				class="menu-button"
 				on:click={() => {
-					if (filterQuery !== '') applyFilter();
+					if (filterQuery !== '') saveFilter();
 				}}
 			>
 				<span>Apply</span>
@@ -417,7 +487,7 @@
 		{/if}
 		<IconPair icon="filter" bind:text={filters.length} />
 	{/if}
-	{#if searchedTableData.length > 0}
+	{#if filteredRows.length > 0}
 		<div class="menu-right">
 			<div id="records-per-page">
 				<div class="menu-padding"><span>Records per page:</span></div>
@@ -456,8 +526,8 @@
 			/>
 		{/each}
 	</div>
-	{#if windowedTableData.length > 0}
-		{#each windowedTableData as dataItem}
+	{#if windowedRows.length > 0}
+		{#each windowedRows as dataItem}
 			<div class="row">
 				{#each columns as [column_name, column_metadata]}
 					<span class="grid-item" class:trimmable={column_metadata.trimmable}>
