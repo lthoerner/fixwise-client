@@ -18,6 +18,7 @@ span,
 input,
 button {
     font-family: 'Helvetica', sans-serif;
+    // vertical-align: middle;
     color: $text-color;
 }
 
@@ -30,6 +31,14 @@ input::-webkit-inner-spin-button {
 input[type='number'] {
     -moz-appearance: textfield;
     appearance: textfield;
+}
+
+input::-webkit-calendar-picker-indicator{
+    display: none;
+}
+
+input[type="date"]::-webkit-input-placeholder{ 
+    visibility: hidden;
 }
 
 button {

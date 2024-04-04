@@ -372,7 +372,7 @@
 <div id="menu">
 	<SelectorBox bind:selector={lookupType} exclusive={true} required={true} />
 	{#if lookupType.selected.includes('search')}
-		<input id="search" class="menu-input" bind:value={searchQuery} placeholder="Quick search..." />
+		<input id="search-query" bind:value={searchQuery} placeholder="Quick search..." />
 	{/if}
 	{#if lookupType.selected.includes('filter')}
 		{#if filterStep === null}
@@ -406,16 +406,24 @@
 			</button>
 		{/if}
 		{#if filterStep === 'criteria'}
-			{#if allFilterColumnsNumeric || allFilterColumnsDate}
+			{#if allFilterColumnsNumeric}
 				<SelectorBox
 					bind:selector={numericOperators}
 					exclusive={true}
 					required={true}
 					horizontalPadding={12}
 				/>
-				<input class="menu-input" bind:value={filterQuery} placeholder="Type a number..." />
+				<input id="filter-query-numeric" bind:value={filterQuery} placeholder="Type a number..." />
+			{:else if allFilterColumnsDate}
+				<SelectorBox
+					bind:selector={dateOperators}
+					exclusive={true}
+					required={true}
+					horizontalPadding={12}
+				/>
+				<input id="filter-query-date" type="date" bind:value={filterQuery} />
 			{:else}
-				<div id="filter-query">
+				<div id="regex-button-container">
 					<button
 						id="regex-button"
 						class:selected={useRegex}
@@ -423,7 +431,7 @@
 					>
 						<img src="/regex.svg" alt="Use regex" />
 					</button>
-					<input class="menu-input" bind:value={filterQuery} placeholder="Type a query..." />
+					<input id="filter-query-string" bind:value={filterQuery} placeholder="Type a query..." />
 				</div>
 			{/if}
 			<button class="menu-button" on:click={() => (filterStep = 'column')}>
@@ -535,20 +543,6 @@
 			}
 		}
 
-		#search {
-			flex-grow: 2;
-			max-width: 250px;
-		}
-
-		#filter-query {
-			@include utility.flex-row;
-			justify-content: flex-end;
-
-			input {
-				padding-right: 2em;
-			}
-		}
-
 		#page-navigation {
 			@include utility.flex-row;
 			gap: variables.$width-standard;
@@ -577,11 +571,47 @@
 			}
 		}
 
+		#regex-button-container {
+			@include utility.flex-row;
+			justify-content: flex-end;
+
+			input {
+				padding-right: 2em;
+			}
+		}
+
 		.menu-input {
 			@include utility.primary-color-outline;
 			@extend .menu-padding;
 			font-size: variables.$font-size-standard;
 			border-radius: variables.$rounding-standard;
+		}
+
+		#search-query {
+			@extend .menu-input;
+			flex-grow: 2;
+			max-width: 250px;
+		}
+
+		#filter-query-string {
+			@extend .menu-input;
+			width: 10em;
+		}
+
+		#filter-query-numeric {
+			@extend .menu-input;
+			width: 8em;
+		}
+
+		#filter-query-date {
+			@extend .menu-input;
+			width: 6em;
+
+			// Width needs to be adjusted for Firefox because date picker cannot be disabled
+			@supports (-moz-appearance: none) {
+				width: 8.4em;
+				padding-right: 7px;
+			}
 		}
 	}
 
