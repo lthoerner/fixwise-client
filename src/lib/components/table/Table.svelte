@@ -5,32 +5,30 @@
 	import IconPair from './IconPair.svelte';
 	import PageNavigatorIcon from './PageNavigatorIcon.svelte';
 
-	export let tableRows: any[];
-	export let tableView: TableViewRecord;
+	export let tableDocument: TableDocument;
 
-	type TableViewRecord = ColumnViewRecord[];
-
-	type ColumnViewRecord = {
-		name: string;
-		display_name: string;
-		data_type: string;
-		trimmable: boolean;
-		formatting: ColumnFormatting | null;
+	type TableDocument = {
+		metadata: TableMetadata;
+		rows: TableRow[];
 	};
 
-	type TableView = Map<string, ColumnView>;
-
-	type ColumnView = {
-		display_name: string;
-		data_type: string;
-		trimmable: boolean;
-		formatting: ColumnFormatting;
+	type TableMetadata = {
+		[column: string]: {
+			data_type: 'integer' | 'decimal' | 'string' | 'timestamp';
+			display: {
+				name: string;
+				trimmable: boolean;
+			};
+		};
 	};
 
-	type ColumnFormatting = {
-		prefix: string;
-		suffix: string;
-		pad_length: number;
+	type TableRow = {
+		[column: string]: CellValue;
+	};
+
+	type CellValue = {
+		value: number | string | Decimal | Date;
+		formatted: string | null;
 	};
 
 	type Selector = {
@@ -67,65 +65,28 @@
 	};
 
 	function parseRowDataTypes() {
-		for (const [column_name, column_metadata] of columns.entries()) {
+		for (const [column_name, column_metadata] of Object.entries(tableDocument.metadata)) {
 			if (column_metadata.data_type === 'decimal') {
-				for (let row of tableRows) {
-					row[column_name] = new Decimal(row[column_name]);
+				for (let row of tableDocument.rows) {
+					row[column_name].value = new Decimal(row[column_name].value.toString());
 				}
 			} else if (column_metadata.data_type === 'timestamp') {
-				for (let row of tableRows) {
-					row[column_name] = new Date(row[column_name]);
+				for (let row of tableDocument.rows) {
+					row[column_name].value = new Date(row[column_name].value.toString());
 				}
 			}
 		}
-
-		return tableRows;
 	}
 
-	function format(row: any) {
-		let formattedRow = { ...row };
-
-		for (const [column_name, column_metadata] of columns.entries()) {
-			let initialValue = row[column_name];
-			let workingValue = initialValue;
-
-			if (column_metadata.data_type === 'decimal') {
-				workingValue = (initialValue as Decimal).toFixed(2);
-			} else if (column_metadata.data_type === 'timestamp') {
-				let date = initialValue as Date;
-				let day = String(date.getDate()).padStart(2, '0');
-				let month = String(date.getMonth() + 1).padStart(2, '0');
-				let year = String(date.getFullYear());
-				let hours = String(date.getHours()).padStart(2, '0');
-				let minutes = String(date.getMinutes()).padStart(2, '0');
-				workingValue = `${day}/${month}/${year} ${hours}:${minutes}`;
-			}
-
-			if (column_metadata.formatting) {
-				if (column_metadata.formatting.pad_length) {
-					workingValue = workingValue
-						.toString()
-						.padStart(column_metadata.formatting.pad_length, '0');
-				}
-
-				workingValue = `${column_metadata.formatting.prefix ?? ''}${workingValue}${column_metadata.formatting.suffix ?? ''}`;
-			}
-
-			formattedRow[column_name] = workingValue;
-		}
-
-		return formattedRow;
-	}
-
-	function isSearchMatch(row: any, query: string): boolean {
+	function isSearchMatch(row: TableRow, query: string): boolean {
 		if (query === '') {
 			return true;
 		}
 
 		const searchQueryLower = searchQuery.toLowerCase();
-		for (const column of columns.keys()) {
-			const searchColumn = row[column].toString().toLowerCase();
-			if (searchColumn.includes(searchQueryLower)) {
+		for (const column of Object.keys(tableDocument.metadata)) {
+			const cellDisplay = (row[column].formatted ?? row[column].value.toString()).toLowerCase();
+			if (cellDisplay.includes(searchQueryLower)) {
 				return true;
 			}
 		}
@@ -133,39 +94,39 @@
 		return false;
 	}
 
-	function isFilterMatch(parsedRow: any, formattedRow: any, filters: Filter[]): boolean {
+	function isFilterMatch(row: TableRow, filters: Filter[]): boolean {
 		for (const filter of filters) {
 			const criteria = filter.criteria;
 
 			for (const column of filter.columns) {
-				const parsedColumnValue = parsedRow[column];
-				const formattedColumnValue = formattedRow[column].toString();
+				const cellValue = row[column].value;
+				const cellDisplay = row[column].formatted ?? cellValue.toString();
 
 				if (criteria.type === 'string_criteria') {
 					if (criteria.regex) {
 						const regex = new RegExp(criteria.value);
-						if (!regex.test(formattedColumnValue)) {
+						if (!regex.test(cellDisplay)) {
 							return false;
 						}
 					} else {
-						if (!formattedColumnValue.includes(criteria.value)) {
+						if (!cellDisplay.includes(criteria.value)) {
 							return false;
 						}
 					}
 				} else if (criteria.type === 'numeric_criteria') {
 					switch (criteria.operator) {
 						case 'greater_than':
-							if (!(parsedColumnValue > criteria.value)) {
+							if (!(Number(cellValue) > criteria.value)) {
 								return false;
 							}
 							break;
 						case 'less_than':
-							if (!(parsedColumnValue < criteria.value)) {
+							if (!(Number(cellValue) < criteria.value)) {
 								return false;
 							}
 							break;
 						case 'equals':
-							if (parsedColumnValue !== criteria.value) {
+							if (Number(cellValue) !== criteria.value) {
 								return false;
 							}
 							break;
@@ -173,17 +134,17 @@
 				} else if (criteria.type === 'date_criteria') {
 					switch (criteria.operator) {
 						case 'after':
-							if (!(parsedColumnValue > criteria.value)) {
+							if (!(cellValue > criteria.value)) {
 								return false;
 							}
 							break;
 						case 'before':
-							if (!(parsedColumnValue < criteria.value)) {
+							if (!(cellValue < criteria.value)) {
 								return false;
 							}
 							break;
 						case 'on':
-							if (parsedColumnValue !== criteria.value) {
+							if (cellValue !== criteria.value) {
 								return false;
 							}
 							break;
@@ -195,27 +156,30 @@
 		return true;
 	}
 
-	function compare(a: any, b: any, selectedSortColumn: string, ascendingSort: boolean) {
-		const nameA = a[selectedSortColumn];
-		const nameB = b[selectedSortColumn];
+	function compare(a: TableRow, b: TableRow, selectedSortColumn: string, ascendingSort: boolean) {
+		let valueA = a[selectedSortColumn].value;
+		let valueB = b[selectedSortColumn].value;
 
-		const column = columns.get(selectedSortColumn);
-		if (column && column.data_type === 'decimal') {
-			return ascendingSort ? new Decimal(nameA).cmp(nameB) : new Decimal(nameB).cmp(nameA);
+		// ? Does this need to be handled? It seems like the values are already being correctly compared
+		const rowType = tableDocument.metadata[selectedSortColumn].data_type;
+
+		if (rowType === 'integer' || rowType === 'decimal') {
+			valueA = Number(valueA);
+			valueB = Number(valueB);
 		}
 
 		if (ascendingSort) {
-			if (nameA < nameB) {
+			if (valueA < valueB) {
 				return -1;
 			}
-			if (nameA > nameB) {
+			if (valueA > valueB) {
 				return 1;
 			}
 		} else {
-			if (nameA < nameB) {
+			if (valueA < valueB) {
 				return 1;
 			}
-			if (nameA > nameB) {
+			if (valueA > valueB) {
 				return -1;
 			}
 		}
@@ -223,21 +187,17 @@
 		return 0;
 	}
 
-	function getFilteredRows(mode: string, searchQuery: string, filters: Filter[]): any[] {
-		const num_rows = parsedRows.length;
+	function getFilteredRows(mode: string, searchQuery: string, filters: Filter[]): TableRow[] {
 		const searchMode = mode === 'search';
 		const filterMode = mode === 'filter';
 
 		let filteredRows = [];
 
-		for (let i = 0; i < num_rows; i++) {
-			const parsedRow = parsedRows[i];
-			const formattedRow = formattedRows[i];
-
-			if (searchMode && isSearchMatch(formattedRow, searchQuery)) {
-				filteredRows.push(formattedRow);
-			} else if (filterMode && isFilterMatch(parsedRow, formattedRow, filters)) {
-				filteredRows.push(formattedRow);
+		for (const row of tableDocument.rows) {
+			if (searchMode && isSearchMatch(row, searchQuery)) {
+				filteredRows.push(row);
+			} else if (filterMode && isFilterMatch(row, filters)) {
+				filteredRows.push(row);
 			}
 		}
 
@@ -291,7 +251,7 @@
 
 	function allColumnsAreType(selectedColumns: Selector, types: string[]) {
 		for (const column_name of selectedColumns.selected) {
-			const column = columns.get(column_name);
+			const column = tableDocument.metadata[column_name];
 			if (column && !types.includes(column.data_type)) {
 				return false;
 			}
@@ -300,14 +260,11 @@
 		return true;
 	}
 
-	const columns: TableView = new Map();
-	for (const column of tableView as ColumnViewRecord[]) {
-		columns.set(column.name, column as ColumnView);
-	}
+	parseRowDataTypes();
 
-	const parsedRows: any[] = parseRowDataTypes();
+	let numColumns = Object.keys(tableDocument.metadata).length;
 
-	let selectedSortColumn = columns.keys().next().value;
+	let selectedSortColumn = Object.keys(tableDocument.metadata)[0];
 	let ascendingSort = true;
 
 	let recordsPerPage = 10;
@@ -326,10 +283,10 @@
 
 	let emptyTable = false;
 
-	for (const [column_name, column_metadata] of columns.entries()) {
+	for (const [column_name, column_metadata] of Object.entries(tableDocument.metadata)) {
 		filterColumns.options.push({
 			true_name: column_name,
-			display_name: column_metadata.display_name
+			display_name: column_metadata.display.name
 		});
 	}
 
@@ -388,7 +345,6 @@
 	$: allFilterColumnsNumeric = allColumnsNumeric(filterColumns);
 	$: allFilterColumnsDate = allColumnsDate(filterColumns);
 
-	$: formattedRows = parsedRows.map(format);
 	$: filteredRows = getFilteredRows(lookupType.selected[0], searchQuery, filters);
 	$: numViewableRows = filteredRows.length;
 	$: windowedRows = filteredRows
@@ -514,12 +470,12 @@
 	{/if}
 </div>
 
-<div id="body" style="--num-columns: {columns.size}">
+<div id="body" style="--num-columns: {numColumns}">
 	<div id="column-headers">
-		{#each columns as [column_name, column_metadata]}
+		{#each Object.entries(tableDocument.metadata) as [column_name, column_metadata]}
 			<ColumnTitle
 				trueName={column_name}
-				displayName={column_metadata.display_name}
+				displayName={column_metadata.display.name}
 				bind:selectedSortColumn
 				bind:selectedFilterColumns={filterColumns.selected}
 				bind:ascending={ascendingSort}
@@ -529,9 +485,9 @@
 	{#if windowedRows.length > 0}
 		{#each windowedRows as row}
 			<div class="row">
-				{#each columns as [column_name, column_metadata]}
-					<span class="grid-item" class:trimmable={column_metadata.trimmable}>
-						{row[column_name]}
+				{#each Object.entries(tableDocument.metadata) as [column_name, column_metadata]}
+					<span class="grid-item" class:trimmable={column_metadata.display.trimmable}>
+						{row[column_name].formatted ?? row[column_name].value}
 					</span>
 				{/each}
 			</div>
