@@ -58,10 +58,6 @@
 	span {
 		font-size: 22px;
 		font-weight: bold;
-
-		// &.selected {
-		// 	background-color: variables.$primary-color-semidark;
-		// }
 	}
 
 	div {

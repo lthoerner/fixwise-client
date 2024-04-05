@@ -14,7 +14,7 @@
 
 	type TableMetadata = {
 		[column: string]: {
-			data_type: 'integer' | 'decimal' | 'string' | 'timestamp';
+			data_type: 'integer' | 'decimal' | 'string' | 'timestamp' | 'tag';
 			display: {
 				name: string;
 				trimmable: boolean;
@@ -494,9 +494,17 @@
 		{#each windowedRows as row}
 			<div class="row">
 				{#each Object.entries(tableDocument.metadata) as [column_name, column_metadata]}
-					<span class="grid-item" class:trimmable={column_metadata.display.trimmable}>
-						{row[column_name].formatted ?? row[column_name].value}
-					</span>
+					{#if column_metadata.data_type === 'tag'}
+						<span class="grid-item">
+							{#if row[column_name].value}
+								<span class="tag">{row[column_name].formatted}</span>
+							{/if}
+						</span>
+					{:else}
+						<span class="grid-item" class:trimmable={column_metadata.display.trimmable}>
+							{row[column_name].formatted ?? row[column_name].value}
+						</span>
+					{/if}
 				{/each}
 			</div>
 		{/each}
@@ -647,6 +655,13 @@
 				white-space: nowrap;
 				overflow: hidden;
 			}
+		}
+
+		.tag {
+			font-size: variables.$font-size-standard;
+			border-radius: variables.$rounding-sharp;
+			background-color: rgba(cyan, 0.35);
+			padding: variables.$width-tiny + 1px variables.$width-small + 1px;
 		}
 
 		.row {
