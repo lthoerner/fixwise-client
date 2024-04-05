@@ -2,8 +2,8 @@
 	import Decimal from 'decimal.js';
 	import SelectorBox from './SelectorBox.svelte';
 	import ColumnTitle from './ColumnTitle.svelte';
-	import IconPair from './IconPair.svelte';
-	import PageNavigatorIcon from './PageNavigatorIcon.svelte';
+	import IconPair from './icons/IconPair.svelte';
+	import PageNavigatorIcon from './icons/PageNavigator.svelte';
 
 	export let tableDocument: TableDocument;
 
