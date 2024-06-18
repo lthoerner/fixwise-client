@@ -7,6 +7,8 @@
 
 	export let tableDocument: TableDocument;
 
+	console.log(tableDocument.metadata);
+
 	type TableDocument = {
 		metadata: TableMetadata;
 		rows: TableRow[];
@@ -16,11 +18,43 @@
 		[column: string]: {
 			data_type: 'integer' | 'decimal' | 'string' | 'timestamp' | 'tag';
 			display: {
-				name: string;
-				trimmable: boolean;
+				text?: TextDisplay;
+				tag?: TagDisplay;
 			};
 		};
 	};
+
+	type ColumnDisplay = {
+		name: string;
+	};
+
+	type TextDisplay = {
+		trimmable: boolean;
+	} & ColumnDisplay;
+
+	type TagDisplay = {
+		options: TagOption[];
+	} & ColumnDisplay;
+
+	function getTagColor(tagDisplay: TagDisplay | undefined, tag_variant: string): string {
+		const tagOption = tagDisplay?.options.find((option) => option.name === tag_variant);
+		const tagColor = tagOption?.color;
+
+		return (
+			tagColor?.preset ??
+			`rgb(${tagColor?.rgb.r}, ${tagColor?.rgb.g}, ${tagColor?.rgb.b})` ??
+			'gray'
+		);
+	}
+
+	type TagOption = {
+		name: string;
+		color: TagColor;
+	};
+
+	type TagColor =
+		| { preset: string; rgb?: never }
+		| { preset?: never; rgb: { r: number; g: number; b: number } };
 
 	type TableRow = {
 		[column: string]: CellValue;
@@ -286,7 +320,8 @@
 	for (const [column_name, column_metadata] of Object.entries(tableDocument.metadata)) {
 		filterColumns.options.push({
 			true_name: column_name,
-			display_name: column_metadata.display.name
+			display_name:
+				column_metadata.display.text?.name ?? column_metadata.display.tag?.name ?? column_name
 		});
 	}
 
@@ -483,7 +518,9 @@
 		{#each Object.entries(tableDocument.metadata) as [column_name, column_metadata]}
 			<ColumnTitle
 				trueName={column_name}
-				displayName={column_metadata.display.name}
+				displayName={column_metadata.display.text?.name ??
+					column_metadata.display.tag?.name ??
+					column_name}
 				bind:selectedSortColumn
 				bind:selectedFilterColumns={filterColumns.selected}
 				bind:ascending={ascendingSort}
@@ -496,12 +533,18 @@
 				{#each Object.entries(tableDocument.metadata) as [column_name, column_metadata]}
 					{#if column_metadata.data_type === 'tag'}
 						<span class="grid-item">
-							{#if row[column_name].value}
-								<span class="tag">{row[column_name].formatted}</span>
-							{/if}
+							<span
+								class="tag"
+								style="--tag-color: {getTagColor(
+									column_metadata.display.tag,
+									row[column_name].value.toString()
+								)}"
+							>
+								{row[column_name].formatted}
+							</span>
 						</span>
 					{:else}
-						<span class="grid-item" class:trimmable={column_metadata.display.trimmable}>
+						<span class="grid-item" class:trimmable={column_metadata.display.text?.trimmable}>
 							{row[column_name].formatted ?? row[column_name].value}
 						</span>
 					{/if}
@@ -660,7 +703,7 @@
 		.tag {
 			font-size: variables.$font-size-standard;
 			border-radius: variables.$rounding-sharp;
-			background-color: rgba(cyan, 0.35);
+			background-color: color-mix(in srgb, var(--tag-color) 35%, transparent);
 			padding: variables.$width-tiny + 1px variables.$width-small + 1px;
 		}
 
