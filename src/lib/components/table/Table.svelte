@@ -34,15 +34,27 @@
 		options: TagOption[];
 	} & ColumnDisplay;
 
-	function getTagColor(tagDisplay: TagDisplay | undefined, tag_variant: string): string {
+	function getTagColor(
+		tagDisplay: TagDisplay | undefined,
+		tag_variant: string
+	): { value: string; opacity: number } {
 		const tagOption = tagDisplay?.options.find((option) => option.name === tag_variant);
-		const tagColor = tagOption?.color;
+		const tagColorIfPreset = tagOption?.color as PresetColor;
+		const tagColorIfRGBA = tagOption?.color as RGBAColor;
 
-		return (
-			tagColor?.preset ??
-			`rgb(${tagColor?.rgb.r}, ${tagColor?.rgb.g}, ${tagColor?.rgb.b})` ??
-			'gray'
-		);
+		if (tagColorIfPreset) {
+			return { value: tagColorIfPreset.name, opacity: tagColorIfPreset.opacity * 100 };
+		} else if (tagColorIfRGBA) {
+			return {
+				value: `rgb(${tagColorIfRGBA.r}, ${tagColorIfRGBA.g}, ${tagColorIfRGBA.b})`,
+				opacity: tagColorIfRGBA.a * 100
+			};
+		} else {
+			return {
+				value: 'gray',
+				opacity: 100
+			};
+		}
 	}
 
 	type TagOption = {
@@ -50,9 +62,19 @@
 		color: TagColor;
 	};
 
-	type TagColor =
-		| { preset: string; rgb?: never }
-		| { preset?: never; rgb: { r: number; g: number; b: number } };
+	type TagColor = PresetColor | RGBAColor;
+
+	type PresetColor = {
+		name: string;
+		opacity: number;
+	};
+
+	type RGBAColor = {
+		r: number;
+		g: number;
+		b: number;
+		a: number;
+	};
 
 	type TableRow = {
 		[column: string]: CellValue;
@@ -533,10 +555,13 @@
 						<span class="grid-item">
 							<span
 								class="tag"
-								style="--tag-color: {getTagColor(
+								style="--tag-color-value: {getTagColor(
 									column_metadata.display.tag,
 									row[column_name].value.toString()
-								)}"
+								).value}; --tag-color-opacity: {getTagColor(
+									column_metadata.display.tag,
+									row[column_name].value.toString()
+								).opacity}%"
 							>
 								{row[column_name].formatted}
 							</span>
@@ -701,7 +726,11 @@
 		.tag {
 			font-size: variables.$font-size-standard;
 			border-radius: variables.$rounding-sharp;
-			background-color: color-mix(in srgb, var(--tag-color) 35%, transparent);
+			background-color: color-mix(
+				in srgb,
+				var(--tag-color-value) var(--tag-color-opacity),
+				transparent
+			);
 			padding: variables.$width-tiny + 1px variables.$width-small + 1px;
 		}
 
