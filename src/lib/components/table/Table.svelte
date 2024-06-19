@@ -7,8 +7,6 @@
 
 	export let tableDocument: TableDocument;
 
-	console.log(tableDocument.metadata);
-
 	type TableDocument = {
 		metadata: TableMetadata;
 		rows: TableRow[];
