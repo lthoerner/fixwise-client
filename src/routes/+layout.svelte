@@ -3,9 +3,12 @@
 </script>
 
 <nav>
-	<a href="/inventory">Inventory</a>
 	<a href="/tickets">Tickets</a>
 	<a href="/customers">Customers</a>
+	<a href="/devices">Devices</a>
+	<a href="/parts">Parts</a>
+	<a href="/vendors">Vendors</a>
+	<a href="/device_models">Device Models</a>
 </nav>
 
 <div id="page-body">

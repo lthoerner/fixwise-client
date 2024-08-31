@@ -122,11 +122,15 @@
 		for (const [column_name, column_metadata] of Object.entries(tableDocument.metadata)) {
 			if (column_metadata.data_type === 'decimal') {
 				for (let row of tableDocument.rows) {
-					row[column_name].value = new Decimal(row[column_name].value.toString());
+					if (row[column_name].value) {
+						row[column_name].value = new Decimal(row[column_name].value.toString());
+					}
 				}
 			} else if (column_metadata.data_type === 'timestamp') {
 				for (let row of tableDocument.rows) {
-					row[column_name].value = new Date(row[column_name].value.toString());
+					if (row[column_name].value) {
+						row[column_name].value = new Date(row[column_name].value.toString());
+					}
 				}
 			}
 		}
@@ -213,6 +217,14 @@
 	function compare(a: TableRow, b: TableRow, selectedSortColumn: string, ascendingSort: boolean) {
 		let valueA = a[selectedSortColumn].value;
 		let valueB = b[selectedSortColumn].value;
+
+		if (valueA === null) {
+			return 1;
+		}
+
+		if (valueB === null) {
+			return -1;
+		}
 
 		// ? Does this need to be handled? It seems like the values are already being correctly compared
 		const rowType = tableDocument.metadata[selectedSortColumn].data_type;
@@ -554,7 +566,7 @@
 					{#if column_metadata.data_type === 'tag'}
 						<span class="grid-item">
 							<span
-								class="tag"
+								class="tag trimmable"
 								style="--tag-color-value: {getTagColor(
 									column_metadata.display.tag,
 									row[column_name].value.toString()
@@ -715,16 +727,17 @@
 		.grid-item {
 			font-size: variables.$font-size-large;
 			max-width: fit-content;
+		}
 
-			&.trimmable {
-				text-overflow: ellipsis;
-				white-space: nowrap;
-				overflow: hidden;
-			}
+		.trimmable {
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			overflow: hidden;
 		}
 
 		.tag {
 			font-size: variables.$font-size-standard;
+			max-width: fit-content;
 			border-radius: variables.$rounding-sharp;
 			background-color: color-mix(
 				in srgb,
