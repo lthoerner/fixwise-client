@@ -4,11 +4,14 @@
 
 <nav>
 	<a href="/tickets">Tickets</a>
+	<a href="/invoices">Invoices</a>
 	<a href="/customers">Customers</a>
 	<a href="/devices">Devices</a>
 	<a href="/parts">Parts</a>
 	<a href="/vendors">Vendors</a>
 	<a href="/device_models">Device Models</a>
+	<a href="/products">Products</a>
+	<a href="/services">Services</a>
 </nav>
 
 <div id="page-body">
