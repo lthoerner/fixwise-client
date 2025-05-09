@@ -9,7 +9,7 @@
 
 	type TableDocument = {
 		metadata: TableMetadata;
-		rows: TableRow[];
+		records: TableRecord[];
 	};
 
 	type TableMetadata = {
@@ -76,7 +76,7 @@
 		a: number;
 	};
 
-	type TableRow = {
+	type TableRecord = {
 		[column: string]: CellValue;
 	};
 
@@ -118,32 +118,34 @@
 		type: 'date_criteria';
 	};
 
-	function parseRowDataTypes() {
+	function parseRecordDataTypes() {
 		for (const [column_name, column_metadata] of Object.entries(tableDocument.metadata)) {
 			if (column_metadata.data_type === 'decimal') {
-				for (let row of tableDocument.rows) {
-					if (row[column_name].value) {
-						row[column_name].value = new Decimal(row[column_name].value.toString());
+				for (let record of tableDocument.records) {
+					if (record[column_name].value) {
+						record[column_name].value = new Decimal(record[column_name].value.toString());
 					}
 				}
 			} else if (column_metadata.data_type === 'timestamp') {
-				for (let row of tableDocument.rows) {
-					if (row[column_name].value) {
-						row[column_name].value = new Date(row[column_name].value.toString());
+				for (let record of tableDocument.records) {
+					if (record[column_name].value) {
+						record[column_name].value = new Date(record[column_name].value.toString());
 					}
 				}
 			}
 		}
 	}
 
-	function isSearchMatch(row: TableRow, query: string): boolean {
+	function isSearchMatch(record: TableRecord, query: string): boolean {
 		if (query === '') {
 			return true;
 		}
 
 		const searchQueryLower = searchQuery.toLowerCase();
 		for (const column of Object.keys(tableDocument.metadata)) {
-			const cellDisplay = (row[column].formatted ?? row[column].value.toString()).toLowerCase();
+			const cellDisplay = (
+				record[column].formatted ?? record[column].value.toString()
+			).toLowerCase();
 			if (cellDisplay.includes(searchQueryLower)) {
 				return true;
 			}
@@ -152,13 +154,13 @@
 		return false;
 	}
 
-	function isFilterMatch(row: TableRow, filters: Filter[]): boolean {
+	function isFilterMatch(record: TableRecord, filters: Filter[]): boolean {
 		for (const filter of filters) {
 			const criteria = filter.criteria;
 
 			for (const column of filter.columns) {
-				const cellValue = row[column].value;
-				const cellDisplay = row[column].formatted ?? cellValue.toString();
+				const cellValue = record[column].value;
+				const cellDisplay = record[column].formatted ?? cellValue.toString();
 
 				if (criteria.type === 'string_criteria') {
 					if (criteria.regex) {
@@ -214,7 +216,12 @@
 		return true;
 	}
 
-	function compare(a: TableRow, b: TableRow, selectedSortColumn: string, ascendingSort: boolean) {
+	function compare(
+		a: TableRecord,
+		b: TableRecord,
+		selectedSortColumn: string,
+		ascendingSort: boolean
+	) {
 		let valueA = a[selectedSortColumn].value;
 		let valueB = b[selectedSortColumn].value;
 
@@ -227,9 +234,9 @@
 		}
 
 		// ? Does this need to be handled? It seems like the values are already being correctly compared
-		const rowType = tableDocument.metadata[selectedSortColumn].data_type;
+		const recordType = tableDocument.metadata[selectedSortColumn].data_type;
 
-		if (rowType === 'integer' || rowType === 'decimal') {
+		if (recordType === 'integer' || recordType === 'decimal') {
 			valueA = Number(valueA);
 			valueB = Number(valueB);
 		}
@@ -253,21 +260,21 @@
 		return 0;
 	}
 
-	function getFilteredRows(mode: string, searchQuery: string, filters: Filter[]): TableRow[] {
+	function getFilteredRecords(mode: string, searchQuery: string, filters: Filter[]): TableRecord[] {
 		const searchMode = mode === 'search';
 		const filterMode = mode === 'filter';
 
-		let filteredRows = [];
+		let filteredRecords = [];
 
-		for (const row of tableDocument.rows) {
-			if (searchMode && isSearchMatch(row, searchQuery)) {
-				filteredRows.push(row);
-			} else if (filterMode && isFilterMatch(row, filters)) {
-				filteredRows.push(row);
+		for (const record of tableDocument.records) {
+			if (searchMode && isSearchMatch(record, searchQuery)) {
+				filteredRecords.push(record);
+			} else if (filterMode && isFilterMatch(record, filters)) {
+				filteredRecords.push(record);
 			}
 		}
 
-		return filteredRows;
+		return filteredRecords;
 	}
 
 	function saveFilter() {
@@ -326,7 +333,7 @@
 		return true;
 	}
 
-	parseRowDataTypes();
+	parseRecordDataTypes();
 
 	let numColumns = Object.keys(tableDocument.metadata).length;
 
@@ -412,9 +419,9 @@
 	$: allFilterColumnsNumeric = allColumnsNumeric(filterColumns);
 	$: allFilterColumnsDate = allColumnsDate(filterColumns);
 
-	$: filteredRows = getFilteredRows(lookupType.selected[0], searchQuery, filters);
-	$: numViewableRows = filteredRows.length;
-	$: windowedRows = filteredRows
+	$: filteredRecords = getFilteredRecords(lookupType.selected[0], searchQuery, filters);
+	$: numViewableRecords = filteredRecords.length;
+	$: windowedRecords = filteredRecords
 		.sort((a, b) => compare(a, b, selectedSortColumn, ascendingSort))
 		.slice((realPage - 1) * recordsPerPage, realPage * recordsPerPage);
 
@@ -425,12 +432,12 @@
 		inputPage = null;
 	}
 	$: realPage = inputPage && inputPage > 0 ? inputPage : 1;
-	$: totalPages = Math.ceil(numViewableRows / recordsPerPage);
+	$: totalPages = Math.ceil(numViewableRecords / recordsPerPage);
 
-	$: if (numViewableRows === 0) {
+	$: if (numViewableRecords === 0) {
 		emptyTable = true;
 	}
-	$: if (emptyTable && numViewableRows > 0) {
+	$: if (emptyTable && numViewableRecords > 0) {
 		inputPage = 1;
 		emptyTable = false;
 	}
@@ -518,7 +525,7 @@
 		{/if}
 		<IconPair icon="filter" bind:text={filters.length} />
 	{/if}
-	{#if filteredRows.length > 0}
+	{#if filteredRecords.length > 0}
 		<div class="menu-right">
 			<div id="records-per-page">
 				<div class="menu-padding"><span>Records per page:</span></div>
@@ -559,8 +566,8 @@
 			/>
 		{/each}
 	</div>
-	{#if windowedRows.length > 0}
-		{#each windowedRows as row}
+	{#if windowedRecords.length > 0}
+		{#each windowedRecords as record}
 			<div class="row">
 				{#each Object.entries(tableDocument.metadata) as [column_name, column_metadata]}
 					{#if column_metadata.data_type === 'tag'}
@@ -569,25 +576,25 @@
 								class="tag trimmable"
 								style="--tag-color-value: {getTagColor(
 									column_metadata.display.tag,
-									row[column_name].value.toString()
+									record[column_name].value.toString()
 								).value}; --tag-color-opacity: {getTagColor(
 									column_metadata.display.tag,
-									row[column_name].value.toString()
+									record[column_name].value.toString()
 								).opacity}%"
 							>
-								{row[column_name].formatted}
+								{record[column_name].formatted}
 							</span>
 						</span>
 					{:else}
 						<span class="grid-item" class:trimmable={column_metadata.display.text?.trimmable}>
-							{row[column_name].formatted ?? row[column_name].value}
+							{record[column_name].formatted ?? record[column_name].value}
 						</span>
 					{/if}
 				{/each}
 			</div>
 		{/each}
 	{:else}
-		<div id="placeholder-row"><span>No rows to display</span></div>
+		<div id="placeholder-row"><span>No records to display</span></div>
 	{/if}
 </div>
 
