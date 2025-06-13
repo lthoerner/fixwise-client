@@ -1,7 +1,13 @@
 <script lang="ts">
-	export let direction: 'left' | 'right';
-	export let inputPage: number | null;
-	export let totalPages: number;
+	let {
+		direction,
+		inputPage = $bindable(),
+		totalPages = $bindable()
+	}: {
+		direction: 'left' | 'right';
+		inputPage: number | null;
+		totalPages: number;
+	} = $props();
 
 	function turnPage() {
 		if (direction === 'right') {
@@ -22,7 +28,7 @@
 	const svgPath = direction == 'right' ? 'M2 2L11 11L2 20' : 'M12 2L3 11L12 20';
 </script>
 
-<button on:click={turnPage}>
+<button onclick={turnPage}>
 	<svg width="14" height="22" viewBox="0 0 14 22" fill="none" xmlns="http://www.w3.org/2000/svg">
 		<path d={svgPath} stroke-width="3" stroke-linecap="round" />
 	</svg>

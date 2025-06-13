@@ -1,13 +1,5 @@
 <script lang="ts">
-	type Selector = {
-		options: NamedItem[];
-		selected: string[];
-	};
-
-	type NamedItem = {
-		true_name: string;
-		display_name: string;
-	};
+	import type { Selector, NamedItem } from './table_types_functions';
 
 	function select(option: string) {
 		if (selector.selected.includes(option)) {
@@ -27,10 +19,17 @@
 		return selector.selected.includes(option);
 	}
 
-	export let selector: Selector;
-	export let exclusive: boolean = false;
-	export let required: boolean = false;
-	export let horizontalPadding: number = 10;
+	let {
+		selector = $bindable(),
+		exclusive,
+		required,
+		horizontalPadding
+	}: {
+		selector: Selector;
+		exclusive: boolean;
+		required: boolean;
+		horizontalPadding: number;
+	} = $props();
 </script>
 
 <div id="wrapper">
@@ -39,7 +38,7 @@
 			class="selector-button"
 			style="padding-left: {horizontalPadding}px; padding-right: {horizontalPadding}px;"
 			class:selected={isSelected(option.true_name)}
-			on:click={() => select(option.true_name)}
+			onclick={() => select(option.true_name)}
 		>
 			{option.display_name}
 		</button>

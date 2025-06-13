@@ -8,15 +8,24 @@
 		}
 	}
 
-	export let trueName: string;
-	export let displayName: string;
-	export let selectedSortColumn: string;
-	export let selectedFilterColumns: string[];
-	export let ascending: boolean;
-	$: selected = selectedSortColumn === trueName;
+	let {
+		trueName,
+		displayName,
+		selectedSortColumn = $bindable(),
+		selectedFilterColumns = $bindable(),
+		ascending = $bindable()
+	}: {
+		trueName: string;
+		displayName: string;
+		selectedSortColumn: string;
+		selectedFilterColumns: string[];
+		ascending: boolean;
+	} = $props();
+
+	let selected = $derived(selectedSortColumn === trueName);
 </script>
 
-<button on:click={sortColumn}>
+<button onclick={sortColumn}>
 	<span class:selected={selectedFilterColumns.includes(trueName)}>{displayName}</span>
 	<div>
 		<img

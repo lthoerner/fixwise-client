@@ -1,6 +1,5 @@
 <script lang="ts">
-	export let icon: 'filter' | 'column';
-	export let text: string | number;
+	let { icon, text = $bindable() }: { icon: 'filter' | 'column'; text: string | number } = $props();
 
 	const svgPath =
 		icon === 'filter'

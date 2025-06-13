@@ -1,264 +1,31 @@
 <script lang="ts">
 	import Decimal from 'decimal.js';
+
 	import SelectorBox from './SelectorBox.svelte';
 	import ColumnTitle from './ColumnTitle.svelte';
 	import IconPair from './icons/IconPair.svelte';
 	import PageNavigatorIcon from './icons/PageNavigator.svelte';
 
-	export let tableDocument: TableDocument;
+	import type {
+		TableDocument,
+		TableRecord,
+		Filter,
+		StringCriteria,
+		NumericCriteria,
+		DateCriteria,
+		Selector
+	} from './table_types_functions';
+	import {
+		getTagColor,
+		isSearchMatch,
+		isFilterMatch,
+		parseRecordDataTypes,
+		allColumnsNumeric,
+		allColumnsDate,
+		compare
+	} from './table_types_functions';
 
-	type TableDocument = {
-		metadata: TableMetadata;
-		records: TableRecord[];
-	};
-
-	type TableMetadata = {
-		[column: string]: {
-			data_type: 'integer' | 'decimal' | 'string' | 'timestamp' | 'tag';
-			display: {
-				text?: TextDisplay;
-				tag?: TagDisplay;
-			};
-		};
-	};
-
-	type ColumnDisplay = {
-		name: string;
-	};
-
-	type TextDisplay = {
-		trimmable: boolean;
-	} & ColumnDisplay;
-
-	type TagDisplay = {
-		options: TagOption[];
-	} & ColumnDisplay;
-
-	function getTagColor(
-		tagDisplay: TagDisplay | undefined,
-		tag_variant: string
-	): { value: string; opacity: number } {
-		const tagOption = tagDisplay?.options.find((option) => option.name === tag_variant);
-		const tagColorIfPreset = tagOption?.color as PresetColor;
-		const tagColorIfRGBA = tagOption?.color as RGBAColor;
-
-		if (tagColorIfPreset) {
-			return { value: tagColorIfPreset.name, opacity: tagColorIfPreset.opacity * 100 };
-		} else if (tagColorIfRGBA) {
-			return {
-				value: `rgb(${tagColorIfRGBA.r}, ${tagColorIfRGBA.g}, ${tagColorIfRGBA.b})`,
-				opacity: tagColorIfRGBA.a * 100
-			};
-		} else {
-			return {
-				value: 'gray',
-				opacity: 100
-			};
-		}
-	}
-
-	type TagOption = {
-		name: string;
-		color: TagColor;
-	};
-
-	type TagColor = PresetColor | RGBAColor;
-
-	type PresetColor = {
-		name: string;
-		opacity: number;
-	};
-
-	type RGBAColor = {
-		r: number;
-		g: number;
-		b: number;
-		a: number;
-	};
-
-	type TableRecord = {
-		[column: string]: CellValue;
-	};
-
-	type CellValue = {
-		value: number | string | Decimal | Date;
-		formatted: string | null;
-	};
-
-	type Selector = {
-		options: NamedItem[];
-		selected: string[];
-	};
-
-	type NamedItem = {
-		true_name: string;
-		display_name: string;
-	};
-
-	type Filter = {
-		columns: string[];
-		criteria: StringCriteria | NumericCriteria | DateCriteria;
-	};
-
-	type StringCriteria = {
-		regex: boolean;
-		value: string;
-		type: 'string_criteria';
-	};
-
-	type NumericCriteria = {
-		operator: 'greater_than' | 'less_than' | 'equals';
-		value: number;
-		type: 'numeric_criteria';
-	};
-
-	type DateCriteria = {
-		operator: 'after' | 'before' | 'on';
-		value: Date;
-		type: 'date_criteria';
-	};
-
-	function parseRecordDataTypes() {
-		for (const [column_name, column_metadata] of Object.entries(tableDocument.metadata)) {
-			if (column_metadata.data_type === 'decimal') {
-				for (let record of tableDocument.records) {
-					if (record[column_name].value) {
-						record[column_name].value = new Decimal(record[column_name].value.toString());
-					}
-				}
-			} else if (column_metadata.data_type === 'timestamp') {
-				for (let record of tableDocument.records) {
-					if (record[column_name].value) {
-						record[column_name].value = new Date(record[column_name].value.toString());
-					}
-				}
-			}
-		}
-	}
-
-	function isSearchMatch(record: TableRecord, query: string): boolean {
-		if (query === '') {
-			return true;
-		}
-
-		const searchQueryLower = searchQuery.toLowerCase();
-		for (const column of Object.keys(tableDocument.metadata)) {
-			const cellDisplay = (
-				record[column].formatted ?? record[column].value.toString()
-			).toLowerCase();
-			if (cellDisplay.includes(searchQueryLower)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	function isFilterMatch(record: TableRecord, filters: Filter[]): boolean {
-		for (const filter of filters) {
-			const criteria = filter.criteria;
-
-			for (const column of filter.columns) {
-				const cellValue = record[column].value;
-				const cellDisplay = record[column].formatted ?? cellValue.toString();
-
-				if (criteria.type === 'string_criteria') {
-					if (criteria.regex) {
-						const regex = new RegExp(criteria.value);
-						if (!regex.test(cellDisplay)) {
-							return false;
-						}
-					} else {
-						if (!cellDisplay.includes(criteria.value)) {
-							return false;
-						}
-					}
-				} else if (criteria.type === 'numeric_criteria') {
-					switch (criteria.operator) {
-						case 'greater_than':
-							if (!(Number(cellValue) > criteria.value)) {
-								return false;
-							}
-							break;
-						case 'less_than':
-							if (!(Number(cellValue) < criteria.value)) {
-								return false;
-							}
-							break;
-						case 'equals':
-							if (Number(cellValue) !== criteria.value) {
-								return false;
-							}
-							break;
-					}
-				} else if (criteria.type === 'date_criteria') {
-					switch (criteria.operator) {
-						case 'after':
-							if (!(cellValue > criteria.value)) {
-								return false;
-							}
-							break;
-						case 'before':
-							if (!(cellValue < criteria.value)) {
-								return false;
-							}
-							break;
-						case 'on':
-							if (cellValue !== criteria.value) {
-								return false;
-							}
-							break;
-					}
-				}
-			}
-		}
-
-		return true;
-	}
-
-	function compare(
-		a: TableRecord,
-		b: TableRecord,
-		selectedSortColumn: string,
-		ascendingSort: boolean
-	) {
-		let valueA = a[selectedSortColumn].value;
-		let valueB = b[selectedSortColumn].value;
-
-		if (valueA === null) {
-			return 1;
-		}
-
-		if (valueB === null) {
-			return -1;
-		}
-
-		// ? Does this need to be handled? It seems like the values are already being correctly compared
-		const recordType = tableDocument.metadata[selectedSortColumn].data_type;
-
-		if (recordType === 'integer' || recordType === 'decimal') {
-			valueA = Number(valueA);
-			valueB = Number(valueB);
-		}
-
-		if (ascendingSort) {
-			if (valueA < valueB) {
-				return -1;
-			}
-			if (valueA > valueB) {
-				return 1;
-			}
-		} else {
-			if (valueA < valueB) {
-				return 1;
-			}
-			if (valueA > valueB) {
-				return -1;
-			}
-		}
-
-		return 0;
-	}
+	let { tableDocument }: { tableDocument: TableDocument } = $props();
 
 	function getFilteredRecords(mode: string, searchQuery: string, filters: Filter[]): TableRecord[] {
 		const searchMode = mode === 'search';
@@ -267,7 +34,7 @@
 		let filteredRecords = [];
 
 		for (const record of tableDocument.records) {
-			if (searchMode && isSearchMatch(record, searchQuery)) {
+			if (searchMode && isSearchMatch(tableDocument, record, searchQuery)) {
 				filteredRecords.push(record);
 			} else if (filterMode && isFilterMatch(record, filters)) {
 				filteredRecords.push(record);
@@ -314,47 +81,26 @@
 		numericOperators.selected = ['equals'];
 	}
 
-	function allColumnsNumeric(selectedColumns: Selector) {
-		return allColumnsAreType(selectedColumns, ['decimal', 'integer']);
-	}
-
-	function allColumnsDate(selectedColumns: Selector) {
-		return allColumnsAreType(selectedColumns, ['timestamp']);
-	}
-
-	function allColumnsAreType(selectedColumns: Selector, types: string[]) {
-		for (const column_name of selectedColumns.selected) {
-			const column = tableDocument.metadata[column_name];
-			if (column && !types.includes(column.data_type)) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	parseRecordDataTypes();
+	parseRecordDataTypes(tableDocument);
 
 	let numColumns = Object.keys(tableDocument.metadata).length;
 
-	let selectedSortColumn = Object.keys(tableDocument.metadata)[0];
-	let ascendingSort = true;
+	let selectedSortColumn = $state(Object.keys(tableDocument.metadata)[0]);
+	let ascendingSort = $state(true);
 
-	let recordsPerPage = 10;
-	let inputPage: number | null = 1;
+	let recordsPerPage = $state(20);
+	let inputPage: number | null = $state(1);
 
-	let searchQuery = '';
-	let filterQuery = '';
+	let searchQuery = $state('');
+	let filterQuery = $state('');
 
-	let filters: Filter[] = [];
+	let filters: Filter[] = $state([]);
 
-	let filterStep: null | 'column' | 'criteria' = null;
-	let filterColumns: Selector = {
+	let filterStep: null | 'column' | 'criteria' = $state(null);
+	let filterColumns: Selector = $state({
 		options: [],
 		selected: []
-	};
-
-	let emptyTable = false;
+	});
 
 	for (const [column_name, column_metadata] of Object.entries(tableDocument.metadata)) {
 		filterColumns.options.push({
@@ -364,7 +110,7 @@
 		});
 	}
 
-	let lookupType: Selector = {
+	let lookupType: Selector = $state({
 		options: [
 			{
 				true_name: 'search',
@@ -376,9 +122,9 @@
 			}
 		],
 		selected: ['search']
-	};
+	});
 
-	let numericOperators: Selector = {
+	let numericOperators: Selector = $state({
 		options: [
 			{
 				true_name: 'greater_than',
@@ -394,9 +140,9 @@
 			}
 		],
 		selected: ['equals']
-	};
+	});
 
-	let dateOperators: Selector = {
+	let dateOperators: Selector = $state({
 		options: [
 			{
 				true_name: 'after',
@@ -412,56 +158,46 @@
 			}
 		],
 		selected: ['on']
-	};
+	});
 
-	let useRegex = false;
+	let useRegex = $state(false);
 
-	$: allFilterColumnsNumeric = allColumnsNumeric(filterColumns);
-	$: allFilterColumnsDate = allColumnsDate(filterColumns);
+	let allFilterColumnsNumeric = $derived(allColumnsNumeric(tableDocument, filterColumns));
+	let allFilterColumnsDate = $derived(allColumnsDate(tableDocument, filterColumns));
 
-	$: filteredRecords = getFilteredRecords(lookupType.selected[0], searchQuery, filters);
-	$: numViewableRecords = filteredRecords.length;
-	$: windowedRecords = filteredRecords
-		.sort((a, b) => compare(a, b, selectedSortColumn, ascendingSort))
-		.slice((realPage - 1) * recordsPerPage, realPage * recordsPerPage);
+	let filteredRecords = $derived(getFilteredRecords(lookupType.selected[0], searchQuery, filters));
 
-	$: if (inputPage !== null && inputPage > totalPages) {
-		inputPage = totalPages;
-	}
-	$: if (inputPage === 0) {
-		inputPage = null;
-	}
-	$: realPage = inputPage && inputPage > 0 ? inputPage : 1;
-	$: totalPages = Math.ceil(numViewableRecords / recordsPerPage);
+	let numViewableRecords = $derived(filteredRecords.length);
+	let emptyTable = $derived(numViewableRecords > 0);
+	let realPage = $derived(inputPage && inputPage > 0 ? inputPage : 1);
+	let totalPages = $derived(Math.ceil(numViewableRecords / recordsPerPage));
 
-	$: if (numViewableRecords === 0) {
-		emptyTable = true;
-	}
-	$: if (emptyTable && numViewableRecords > 0) {
-		inputPage = 1;
-		emptyTable = false;
-	}
+	let windowedRecords = $derived(
+		filteredRecords
+			.sort((a, b) => compare(tableDocument, a, b, selectedSortColumn, ascendingSort))
+			.slice((realPage - 1) * recordsPerPage, realPage * recordsPerPage)
+	);
 </script>
 
 <div id="menu">
-	<SelectorBox bind:selector={lookupType} exclusive={true} required={true} />
+	<SelectorBox bind:selector={lookupType} exclusive={true} required={true} horizontalPadding={10} />
 	{#if lookupType.selected.includes('search')}
 		<input id="search-query" bind:value={searchQuery} placeholder="Quick search..." />
 	{/if}
 	{#if lookupType.selected.includes('filter')}
 		{#if filterStep === null}
-			<button class="menu-button" on:click={() => (filterStep = 'column')}>
+			<button class="menu-button" onclick={() => (filterStep = 'column')}>
 				<span>Add Filter</span>
 			</button>
 			{#if filters.length > 0}
-				<button class="menu-button" on:click={() => (filters = [])}>
+				<button class="menu-button" onclick={() => (filters = [])}>
 					<span>Reset</span>
 				</button>
 			{/if}
 		{:else}
 			<button
 				class="menu-button"
-				on:click={() => {
+				onclick={() => {
 					filterStep = null;
 					filterQuery = '';
 					filterColumns.selected = [];
@@ -471,10 +207,15 @@
 			</button>
 		{/if}
 		{#if filterStep === 'column'}
-			<SelectorBox bind:selector={filterColumns} />
+			<SelectorBox
+				bind:selector={filterColumns}
+				exclusive={false}
+				required={false}
+				horizontalPadding={10}
+			/>
 			<button
 				class="menu-button"
-				on:click={() => (filterColumns.selected.length > 0 ? (filterStep = 'criteria') : false)}
+				onclick={() => (filterColumns.selected.length > 0 ? (filterStep = 'criteria') : false)}
 			>
 				<span>Next</span>
 			</button>
@@ -501,19 +242,19 @@
 					<button
 						id="regex-button"
 						class:selected={useRegex}
-						on:click={() => (useRegex = !useRegex)}
+						onclick={() => (useRegex = !useRegex)}
 					>
 						<img src="/regex.svg" alt="Use regex" />
 					</button>
 					<input id="filter-query-string" bind:value={filterQuery} placeholder="Type a query..." />
 				</div>
 			{/if}
-			<button class="menu-button" on:click={() => (filterStep = 'column')}>
+			<button class="menu-button" onclick={() => (filterStep = 'column')}>
 				<span>Back</span>
 			</button>
 			<button
 				class="menu-button"
-				on:click={() => {
+				onclick={() => {
 					if (filterQuery !== '') saveFilter();
 				}}
 			>

@@ -1,9 +1,10 @@
-$text-color: darken(white, 3%);
+@use "sass:color";
+$text-color: color.adjust(white, $lightness: -3%);
 $background-color: black;
 $primary-color: gray;
-$primary-color-light: lighten($primary-color, 50%);
-$primary-color-semidark: darken($primary-color, 25%);
-$primary-color-dark: darken($primary-color, 43%);
+$primary-color-light: color.adjust($primary-color, $lightness: 50%);
+$primary-color-semidark: color.adjust($primary-color, $lightness: -25%);
+$primary-color-dark: color.adjust($primary-color, $lightness: -43%);
 
 $width-tiny: 3px;
 $width-small: 7px;
