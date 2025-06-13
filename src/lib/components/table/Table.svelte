@@ -177,6 +177,12 @@
 			.sort((a, b) => compare(tableDocument, a, b, selectedSortColumn, ascendingSort))
 			.slice((realPage - 1) * recordsPerPage, realPage * recordsPerPage)
 	);
+
+	$effect(() => {
+		let s = searchQuery;
+		let f = filters;
+		inputPage = 1;
+	});
 </script>
 
 <div id="menu">
