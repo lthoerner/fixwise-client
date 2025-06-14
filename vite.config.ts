@@ -8,5 +8,8 @@ export default defineConfig({
 	},
 	server: {
 		allowedHosts: ['fixwise.io'],
+		headers: {
+			'Cache-Control': 'no-store',
+		},
 	},
 });
