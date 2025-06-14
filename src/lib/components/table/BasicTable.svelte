@@ -1,9 +1,8 @@
 <script lang="ts">
 	import Decimal from 'decimal.js';
 
-	import SelectorBox from './SelectorBox.svelte';
-	import ColumnTitle from './ColumnTitle.svelte';
-	import IconPair from './icons/IconPair.svelte';
+	// import ColumnTitle from './ColumnTitle.svelte';
+	// import IconPair from './icons/IconPair.svelte';
 	import PageNavigatorIcon from './icons/PageNavigator.svelte';
 
 	import type {
@@ -27,16 +26,17 @@
 
 	let { tableDocument }: { tableDocument: TableDocument } = $props();
 
-	function getFilteredRecords(mode: string, searchQuery: string, filters: Filter[]): TableRecord[] {
-		const searchMode = mode === 'search';
-		const filterMode = mode === 'filter';
-
+	function getFilteredRecords(
+		searchMode: boolean,
+		searchQuery: string,
+		filters: Filter[]
+	): TableRecord[] {
 		let filteredRecords = [];
 
 		for (const record of tableDocument.records) {
 			if (searchMode && isSearchMatch(tableDocument, record, searchQuery)) {
 				filteredRecords.push(record);
-			} else if (filterMode && isFilterMatch(record, filters)) {
+			} else if (!searchMode && isFilterMatch(record, filters)) {
 				filteredRecords.push(record);
 			}
 		}
@@ -99,7 +99,7 @@
 	let filterStep: null | 'column' | 'criteria' = $state(null);
 	let filterColumns: Selector = $state({
 		options: [],
-		selected: ''
+		selected: 'placeholder'
 	});
 
 	for (const [column_name, column_metadata] of Object.entries(tableDocument.metadata)) {
@@ -110,19 +110,7 @@
 		});
 	}
 
-	let lookupType: Selector = $state({
-		options: [
-			{
-				true_name: 'search',
-				display_name: 'Search'
-			},
-			{
-				true_name: 'filter',
-				display_name: 'Filter'
-			}
-		],
-		selected: 'search'
-	});
+	let lookupTypeIsSearch = $state(true);
 
 	let numericOperators: Selector = $state({
 		options: [
@@ -165,7 +153,7 @@
 	let allFilterColumnsNumeric = $derived(allColumnsNumeric(tableDocument, filterColumns));
 	let allFilterColumnsDate = $derived(allColumnsDate(tableDocument, filterColumns));
 
-	let filteredRecords = $derived(getFilteredRecords(lookupType.selected[0], searchQuery, filters));
+	let filteredRecords = $derived(getFilteredRecords(lookupTypeIsSearch, searchQuery, filters));
 
 	let numViewableRecords = $derived(filteredRecords.length);
 	let emptyTable = $derived(numViewableRecords > 0);
@@ -186,11 +174,13 @@
 </script>
 
 <div id="menu">
-	<SelectorBox bind:selector={lookupType} exclusive={true} required={true} horizontalPadding={10} />
-	{#if lookupType.selected.includes('search')}
+	<select bind:value={lookupTypeIsSearch}>
+		<option value={true}>Search</option>
+		<option value={false}>Filter</option>
+	</select>
+	{#if lookupTypeIsSearch}
 		<input id="search-query" bind:value={searchQuery} placeholder="Quick search..." />
-	{/if}
-	{#if lookupType.selected.includes('filter')}
+	{:else}
 		{#if filterStep === null}
 			<button class="menu-button" onclick={() => (filterStep = 'column')}>
 				<span>Add Filter</span>
@@ -213,12 +203,12 @@
 			</button>
 		{/if}
 		{#if filterStep === 'column'}
-			<SelectorBox
-				bind:selector={filterColumns}
-				exclusive={false}
-				required={false}
-				horizontalPadding={10}
-			/>
+			<select bind:value={filterColumns.selected}>
+				<option value="">Choose a column</option>
+				{#each filterColumns.options as column}
+					<option value={column.true_name}>{column.display_name}</option>
+				{/each}
+			</select>
 			<button
 				class="menu-button"
 				onclick={() => (filterColumns.selected.length > 0 ? (filterStep = 'criteria') : false)}
@@ -228,20 +218,18 @@
 		{/if}
 		{#if filterStep === 'criteria'}
 			{#if allFilterColumnsNumeric}
-				<SelectorBox
-					bind:selector={numericOperators}
-					exclusive={true}
-					required={true}
-					horizontalPadding={12}
-				/>
+				<select bind:value={numericOperators.selected}>
+					<option value="equals">=</option>
+					<option value="less_than">&lt;</option>
+					<option value="greater_than">&gt;</option>
+				</select>
 				<input id="filter-query-numeric" bind:value={filterQuery} placeholder="Type a number..." />
 			{:else if allFilterColumnsDate}
-				<SelectorBox
-					bind:selector={dateOperators}
-					exclusive={true}
-					required={true}
-					horizontalPadding={12}
-				/>
+				<select bind:value={dateOperators.selected}>
+					<option value="on">On</option>
+					<option value="before">Before</option>
+					<option value="after">After</option>
+				</select>
 				<input id="filter-query-date" type="date" bind:value={filterQuery} />
 			{:else}
 				<div id="regex-button-container">
@@ -268,9 +256,9 @@
 			</button>
 		{/if}
 		{#if filterStep !== null}
-			<IconPair icon="column" bind:text={filterColumns.selected.length} />
+			<!-- <IconPair icon="column" bind:text={filterColumns.selected.length} /> -->
 		{/if}
-		<IconPair icon="filter" bind:text={filters.length} />
+		<!-- <IconPair icon="filter" bind:text={filters.length} /> -->
 	{/if}
 	{#if filteredRecords.length > 0}
 		<div class="menu-right">
@@ -299,29 +287,28 @@
 	{/if}
 </div>
 
-<div id="body" style="--num-columns: {numColumns}">
-	<div id="column-headers">
-		{#each Object.entries(tableDocument.metadata) as [column_name, column_metadata]}
-			<ColumnTitle
-				trueName={column_name}
-				displayName={column_metadata.display.text?.name ??
-					column_metadata.display.tag?.name ??
-					column_name}
-				bind:selectedSortColumn
-				bind:selectedFilterColumn={filterColumns.selected}
-				bind:ascending={ascendingSort}
-			/>
-		{/each}
-	</div>
-	{#if windowedRecords.length > 0}
-		{#each windowedRecords as record}
-			<div class="row">
-				{#each Object.entries(tableDocument.metadata) as [column_name, column_metadata]}
-					{#if column_metadata.data_type === 'tag'}
-						<span class="grid-item">
-							<span
+<table
+	id="body"
+	style="--num-columns: {numColumns}; border-collapse: separate; border-spacing: 15px;"
+>
+	<thead>
+		<tr id="column-headers">
+			{#each Object.entries(tableDocument.metadata) as [column_name, column_metadata]}
+				<th>
+					{column_metadata.display.text?.name ?? column_metadata.display.tag?.name ?? column_name}
+				</th>
+			{/each}
+		</tr>
+	</thead>
+	<tbody>
+		{#if windowedRecords.length > 0}
+			{#each windowedRecords as record}
+				<tr>
+					{#each Object.entries(tableDocument.metadata) as [column_name, column_metadata]}
+						{#if column_metadata.data_type === 'tag'}
+							<td
 								class="tag trimmable"
-								style="--tag-color-value: {getTagColor(
+								style="color: {getTagColor(
 									column_metadata.display.tag,
 									record[column_name].value.toString()
 								).value}; --tag-color-opacity: {getTagColor(
@@ -330,20 +317,20 @@
 								).opacity}%"
 							>
 								{record[column_name].formatted}
-							</span>
-						</span>
-					{:else}
-						<span class="grid-item" class:trimmable={column_metadata.display.text?.trimmable}>
-							{record[column_name].formatted ?? record[column_name].value}
-						</span>
-					{/if}
-				{/each}
-			</div>
-		{/each}
-	{:else}
-		<div id="placeholder-row"><span>No records to display</span></div>
-	{/if}
-</div>
+							</td>
+						{:else}
+							<td class="grid-item" class:trimmable={column_metadata.display.text?.trimmable}>
+								{record[column_name].formatted ?? record[column_name].value}
+							</td>
+						{/if}
+					{/each}
+				</tr>
+			{/each}
+		{:else}
+			<tr id="placeholder-row"><td>No records to display</td></tr>
+		{/if}
+	</tbody>
+</table>
 
 <style lang="scss">
 	@use '$styles/variables';
@@ -398,18 +385,18 @@
 			padding: 7px 10px;
 		}
 
-		.menu-button {
-			@include utility.primary-color-outline;
-			@extend .menu-padding;
-			font-size: variables.$font-size-standard;
-			border-radius: variables.$rounding-standard;
-			transition: variables.$transition-standard;
+		// .menu-button {
+		// 	@include utility.primary-color-outline;
+		// 	@extend .menu-padding;
+		// 	font-size: variables.$font-size-standard;
+		// 	border-radius: variables.$rounding-standard;
+		// 	transition: variables.$transition-standard;
 
-			&:hover {
-				cursor: pointer;
-				background-color: variables.$primary-color;
-			}
-		}
+		// 	&:hover {
+		// 		cursor: pointer;
+		// 		background-color: variables.$primary-color;
+		// 	}
+		// }
 
 		#regex-button-container {
 			@include utility.flex-row;
@@ -427,11 +414,11 @@
 			border-radius: variables.$rounding-standard;
 		}
 
-		#search-query {
-			@extend .menu-input;
-			flex-grow: 2;
-			max-width: 250px;
-		}
+		// #search-query {
+		// 	@extend .menu-input;
+		// 	flex-grow: 2;
+		// 	max-width: 250px;
+		// }
 
 		#filter-query-string {
 			@extend .menu-input;
@@ -455,81 +442,81 @@
 		}
 	}
 
-	#body {
-		@include utility.primary-color-outline;
-		display: grid;
-		grid-template-columns: repeat(var(--num-columns), auto);
-		grid-auto-rows: min-content;
-		column-gap: variables.$width-large;
-		justify-content: space-between;
-		border-radius: variables.$rounding-standard;
-		margin-top: variables.$width-standard;
-		padding: variables.$width-standard;
-		padding-top: variables.$width-standard + 12px;
+	// #body {
+	// 	@include utility.primary-color-outline;
+	// 	display: grid;
+	// 	grid-template-columns: repeat(var(--num-columns), auto);
+	// 	grid-auto-rows: min-content;
+	// 	column-gap: variables.$width-large;
+	// 	justify-content: space-between;
+	// 	border-radius: variables.$rounding-standard;
+	// 	margin-top: variables.$width-standard;
+	// 	padding: variables.$width-standard;
+	// 	padding-top: variables.$width-standard + 12px;
 
-		#column-headers {
-			@include utility.primary-color-outline-bottom;
-			display: grid;
-			grid-column: 1 / span var(--num-columns);
-			grid-template-columns: subgrid;
-			padding-left: variables.$width-standard;
-			padding-right: variables.$width-standard;
-			padding-bottom: variables.$width-standard + 2px;
-			margin-bottom: variables.$width-small + 3px;
-		}
+	// 	#column-headers {
+	// 		@include utility.primary-color-outline-bottom;
+	// 		display: grid;
+	// 		grid-column: 1 / span var(--num-columns);
+	// 		grid-template-columns: subgrid;
+	// 		padding-left: variables.$width-standard;
+	// 		padding-right: variables.$width-standard;
+	// 		padding-bottom: variables.$width-standard + 2px;
+	// 		margin-bottom: variables.$width-small + 3px;
+	// 	}
 
-		.grid-item {
-			font-size: variables.$font-size-large;
-			max-width: fit-content;
-		}
+	// 	.grid-item {
+	// 		font-size: variables.$font-size-large;
+	// 		max-width: fit-content;
+	// 	}
 
-		.trimmable {
-			text-overflow: ellipsis;
-			white-space: nowrap;
-			overflow: hidden;
-		}
+	// 	.trimmable {
+	// 		text-overflow: ellipsis;
+	// 		white-space: nowrap;
+	// 		overflow: hidden;
+	// 	}
 
-		.tag {
-			font-size: variables.$font-size-standard;
-			max-width: fit-content;
-			border-radius: variables.$rounding-sharp;
-			background-color: color-mix(
-				in srgb,
-				var(--tag-color-value) var(--tag-color-opacity),
-				transparent
-			);
-			padding: variables.$width-tiny + 1px variables.$width-small + 1px;
-		}
+	// 	.tag {
+	// 		font-size: variables.$font-size-standard;
+	// 		max-width: fit-content;
+	// 		border-radius: variables.$rounding-sharp;
+	// 		background-color: color-mix(
+	// 			in srgb,
+	// 			var(--tag-color-value) var(--tag-color-opacity),
+	// 			transparent
+	// 		);
+	// 		padding: variables.$width-tiny + 1px variables.$width-small + 1px;
+	// 	}
 
-		.row {
-			display: grid;
-			grid-template-columns: subgrid;
-			grid-column: 1 / span var(--num-columns);
-			padding: variables.$width-small + 3px variables.$width-standard;
-			border-radius: variables.$rounding-standard;
-			transition: variables.$transition-slow;
+	// 	.row {
+	// 		display: grid;
+	// 		grid-template-columns: subgrid;
+	// 		grid-column: 1 / span var(--num-columns);
+	// 		padding: variables.$width-small + 3px variables.$width-standard;
+	// 		border-radius: variables.$rounding-standard;
+	// 		transition: variables.$transition-slow;
 
-			span {
-				&:hover {
-					cursor: text;
-				}
-			}
+	// 		span {
+	// 			&:hover {
+	// 				cursor: text;
+	// 			}
+	// 		}
 
-			&:hover {
-				cursor: pointer;
-				transform: translateY(-2px);
-				background-color: variables.$primary-color-dark;
-			}
-		}
+	// 		&:hover {
+	// 			cursor: pointer;
+	// 			transform: translateY(-2px);
+	// 			background-color: lightgrey;
+	// 		}
+	// 	}
 
-		#placeholder-row {
-			@include utility.flex-row;
-			justify-content: center;
-			grid-column: 1 / span var(--num-columns);
-			font-size: variables.$font-size-large;
-			font-weight: bold;
-			padding-top: 20px;
-			padding-bottom: 14px;
-		}
-	}
+	// 	#placeholder-row {
+	// 		@include utility.flex-row;
+	// 		justify-content: center;
+	// 		grid-column: 1 / span var(--num-columns);
+	// 		font-size: variables.$font-size-large;
+	// 		font-weight: bold;
+	// 		padding-top: 20px;
+	// 		padding-bottom: 14px;
+	// 	}
+	// }
 </style>

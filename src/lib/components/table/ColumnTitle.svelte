@@ -12,13 +12,13 @@
 		trueName,
 		displayName,
 		selectedSortColumn = $bindable(),
-		selectedFilterColumns = $bindable(),
+		selectedFilterColumn = $bindable(),
 		ascending = $bindable()
 	}: {
 		trueName: string;
 		displayName: string;
 		selectedSortColumn: string;
-		selectedFilterColumns: string[];
+		selectedFilterColumn: string;
 		ascending: boolean;
 	} = $props();
 
@@ -26,7 +26,7 @@
 </script>
 
 <button onclick={sortColumn}>
-	<span class:selected={selectedFilterColumns.includes(trueName)}>{displayName}</span>
+	<span class:selected={selectedFilterColumn === trueName}>{displayName}</span>
 	<div>
 		<img
 			class:active={ascending && selected}

@@ -57,7 +57,7 @@ type CellValue = {
 
 export type Selector = {
     options: NamedItem[];
-    selected: string[];
+    selected: string;
 };
 
 export type NamedItem = {
@@ -67,7 +67,7 @@ export type NamedItem = {
 
 
 export type Filter = {
-    columns: string[];
+    column: string;
     criteria: StringCriteria | NumericCriteria | DateCriteria;
 };
 
@@ -166,58 +166,56 @@ export function isFilterMatch(
     for (const filter of filters) {
         const criteria = filter.criteria;
 
-        for (const column of filter.columns) {
-            const cellValue = record[column].value;
-            const cellDisplay =
-                record[column].formatted ?? cellValue.toString();
+        const cellValue = record[filter.column].value;
+        const cellDisplay =
+            record[filter.column].formatted ?? cellValue.toString();
 
-            if (criteria.type === "string_criteria") {
-                if (criteria.regex) {
-                    const regex = new RegExp(criteria.value);
-                    if (!regex.test(cellDisplay)) {
+        if (criteria.type === "string_criteria") {
+            if (criteria.regex) {
+                const regex = new RegExp(criteria.value);
+                if (!regex.test(cellDisplay)) {
+                    return false;
+                }
+            } else {
+                if (!cellDisplay.includes(criteria.value)) {
+                    return false;
+                }
+            }
+        } else if (criteria.type === "numeric_criteria") {
+            switch (criteria.operator) {
+                case "greater_than":
+                    if (!(Number(cellValue) > criteria.value)) {
                         return false;
                     }
-                } else {
-                    if (!cellDisplay.includes(criteria.value)) {
+                    break;
+                case "less_than":
+                    if (!(Number(cellValue) < criteria.value)) {
                         return false;
                     }
-                }
-            } else if (criteria.type === "numeric_criteria") {
-                switch (criteria.operator) {
-                    case "greater_than":
-                        if (!(Number(cellValue) > criteria.value)) {
-                            return false;
-                        }
-                        break;
-                    case "less_than":
-                        if (!(Number(cellValue) < criteria.value)) {
-                            return false;
-                        }
-                        break;
-                    case "equals":
-                        if (Number(cellValue) !== criteria.value) {
-                            return false;
-                        }
-                        break;
-                }
-            } else if (criteria.type === "date_criteria") {
-                switch (criteria.operator) {
-                    case "after":
-                        if (!(cellValue > criteria.value)) {
-                            return false;
-                        }
-                        break;
-                    case "before":
-                        if (!(cellValue < criteria.value)) {
-                            return false;
-                        }
-                        break;
-                    case "on":
-                        if (cellValue !== criteria.value) {
-                            return false;
-                        }
-                        break;
-                }
+                    break;
+                case "equals":
+                    if (Number(cellValue) !== criteria.value) {
+                        return false;
+                    }
+                    break;
+            }
+        } else if (criteria.type === "date_criteria") {
+            switch (criteria.operator) {
+                case "after":
+                    if (!(cellValue > criteria.value)) {
+                        return false;
+                    }
+                    break;
+                case "before":
+                    if (!(cellValue < criteria.value)) {
+                        return false;
+                    }
+                    break;
+                case "on":
+                    if (cellValue !== criteria.value) {
+                        return false;
+                    }
+                    break;
             }
         }
     }
